@@ -1,0 +1,7 @@
+* RC transient with LTspice-specific .options ngspice does not have
+V1 in 0 1
+R1 in out 1k
+C1 out 0 1u
+.options plotwinsize=0 numdgt=7
+.tran 1u 5m
+.end

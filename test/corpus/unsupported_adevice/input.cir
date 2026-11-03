@@ -1,0 +1,6 @@
+* LTspice special-function A-device (no ngspice equivalent)
+V1 in 0 1
+A1 in 0 0 0 0 0 out 0 SCHMITT
+.model SCHMITT SCHMITT(vt=0.5 vh=0.1)
+.tran 1u 1m
+.end

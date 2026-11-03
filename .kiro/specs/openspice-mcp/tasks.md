@@ -191,7 +191,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/bridge.ts`: detect `ltspice-mcp-bridge.exe` on Windows x64 (report via status); when `OPENSPICE_ENABLE_BRIDGE` is on, run it as an MCP client subprocess, forwarding supported ops `--headless` by default and `--pid`/`--port` (loopback) only on explicit live-GUI request; map exit/failure to `BRIDGE_UNAVAILABLE` and fall back to the ngspice file-based path. Add a `delegate` flag to bridge-capable tools; keep file-based as the default. Cover with `test/fixtures/fake-bridge.mjs`
   - _Requirements: 1.4, 17.1, 17.2, 17.3, 17.4_
 
-- [ ] 20. Build the compatibility test corpus and wire it into CI
+- [x] 20. Build the compatibility test corpus and wire it into CI
   - Create `test/corpus/<case>/` fixtures (`input.cir`/`input.asc`, `expected.net`, optional `expected.meas.json` with tolerances, `notes.md`), a runner that parses, netlists, runs ngspice through the compat layer, and compares within tolerance, plus cases for each newly supported/translated or unsupported construct; run it in the task-1 CI `test` job. Leave room for the owner's undergrad LTspice circuits
   - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
