@@ -5,7 +5,7 @@
  */
 
 import { statSync } from "node:fs";
-import { isAbsolute, resolve } from "node:path";
+import { delimiter as pathDelimiter, isAbsolute, resolve } from "node:path";
 
 import { parseRoots, RootsError } from "./paths.js";
 
@@ -114,10 +114,16 @@ function parseOptionalAbsoluteDir(name: string, raw: string | undefined): string
   return resolve(value);
 }
 
-/** A comma- (or OS path-separator-) separated list of existing absolute directories. Blank is empty. */
+/**
+ * A list of existing absolute directories, split on the OS path delimiter
+ * (`:` on POSIX, `;` on Windows) or a comma. Splitting on the OS delimiter
+ * rather than a bare `:` keeps Windows drive-letter paths like `C:\sym` intact.
+ * Blank is empty.
+ */
 function parseAbsoluteDirList(name: string, raw: string | undefined): string[] {
+  const separator = new RegExp(`[,${pathDelimiter === ";" ? ";" : ":"}]`);
   const entries = (raw ?? "")
-    .split(/[,:;]/)
+    .split(separator)
     .map((entry) => entry.trim())
     .filter((entry) => entry !== "");
   const dirs: string[] = [];

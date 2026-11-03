@@ -3,8 +3,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Config } from "./config.js";
 import { stopAll } from "./children.js";
 import { createCore, type Core } from "./core.js";
+import { registerDesignTools } from "./tools/designs.js";
 import { registerNetlistTool } from "./tools/netlist.js";
 import { registerRawTools } from "./tools/raw.js";
+import { registerReferenceTool } from "./tools/reference.js";
 import { registerSchematicTools } from "./tools/schematic.js";
 import { registerSimulateTool } from "./tools/simulate.js";
 import { registerStatusTool } from "./tools/status.js";
@@ -42,6 +44,8 @@ export function createServer(config: Config): OpenSpiceServer {
   registerSchematicTools(server, core);
   registerSimulateTool(server, core);
   registerRawTools(server, core);
+  registerDesignTools(server, core);
+  registerReferenceTool(server, core);
   const shutdown = async () => {
     await stopAll();
   };

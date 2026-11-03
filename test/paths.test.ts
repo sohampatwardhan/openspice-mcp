@@ -19,8 +19,13 @@ writeFileSync(join(root, "src", "a.ts"), "x");
 writeFileSync(join(sibling, "b.ts"), "x");
 writeFileSync(join(tmp, "file.txt"), "x");
 writeFileSync(join(root, "existing.cir"), "x");
+writeFileSync(join(outside, "target.cir"), "x");
 symlinkSync(outside, join(root, "escape"));
 symlinkSync(join(root, "src"), join(outside, "into-root"));
+// A symlink inside the roots whose final component points at a file outside.
+symlinkSync(join(outside, "target.cir"), join(root, "link-out.cir"));
+// A symlink inside the roots whose final component points at a file inside.
+symlinkSync(join(root, "existing.cir"), join(root, "link-in.cir"));
 
 async function code(p: Promise<unknown>): Promise<string> {
   try {
@@ -87,6 +92,21 @@ describe("Roots.resolveInside", () => {
     assert.equal(await roots.resolveForWrite(join(root, "src", "new.json")), join(root, "src", "new.json"));
     assert.equal(await code(roots.resolveForWrite(join(outside, "new.json"))), "PATH_OUTSIDE_ROOTS");
     assert.equal(await code(roots.resolveForWrite(join(root, "escape", "new.json"))), "PATH_OUTSIDE_ROOTS");
+  });
+
+  it("walks up to the nearest existing ancestor for a new nested path", async () => {
+    assert.equal(await roots.resolveForWrite(join(root, "src", "a", "b", "c.json")), join(root, "src", "a", "b", "c.json"));
+    assert.equal(await code(roots.resolveForWrite(join(outside, "a", "b", "c.json"))), "PATH_OUTSIDE_ROOTS");
+    assert.equal(await code(roots.resolveForWrite(join(root, "escape", "a", "b", "c.json"))), "PATH_OUTSIDE_ROOTS");
+  });
+
+  it("rejects writing through an existing symlink final component that escapes the roots", async () => {
+    assert.equal(await code(roots.resolveForWrite(join(root, "link-out.cir"))), "PATH_OUTSIDE_ROOTS");
+  });
+
+  it("rejects writing through an existing symlink even when its target is inside the roots", async () => {
+    // Writing must target the named path, never silently follow a symlink.
+    assert.equal(await code(roots.resolveForWrite(join(root, "link-in.cir"))), "PATH_OUTSIDE_ROOTS");
   });
 });
 

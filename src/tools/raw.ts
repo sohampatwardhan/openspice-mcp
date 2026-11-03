@@ -21,6 +21,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import type { Core } from "../core.js";
+import { ToolError } from "../errors.js";
 import { exportWaveforms, parseMeas, rawInfo, readRaw, summarize } from "../raw.js";
 import { renderPlot } from "../plot.js";
 import { writeLtspiceRaw } from "../rawwrite.js";
@@ -227,9 +228,11 @@ function registerGetLog(server: McpServer, core: Core): void {
     {
       title: "Read a SPICE log",
       description:
-        "Read a SPICE .log file inside the roots and return its text (optionally only the last tail_lines lines) along with the measurements parsed " +
-        "from it and any lines that look like errors/warnings. Pairs with openspice_simulate, which writes the log beside the .raw.",
-      input: z.object({ path: z.string(), tail_lines: z.number().int().positive().optional() }).strict(),
+        "Read a SPICE .log file and return its text (optionally only the last tail_lines lines) along with the measurements parsed from it and any " +
+        "lines that look like errors/warnings. Give either a path inside the roots, or a design_id (from openspice_designs) to read the log from " +
+        "that design's most recent simulation (Requirement 10.1). An unknown design id fails with DESIGN_NOT_FOUND; a design that has not been " +
+        "simulated yet fails with DESIGN_HAS_NO_RESULT. Pairs with openspice_simulate, which writes the log beside the .raw.",
+      input: z.object({ path: z.string().optional(), design_id: z.string().optional(), tail_lines: z.number().int().positive().optional() }).strict(),
       output: z.object({
         source: z.object({ path: z.string() }),
         text: z.string(),
@@ -241,7 +244,8 @@ function registerGetLog(server: McpServer, core: Core): void {
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
     async (args) => {
-      const resolved = await core.roots.resolveInside(args.path);
+      const logPath = resolveLogPath(core, args.path, args.design_id);
+      const resolved = await core.roots.resolveInside(logPath);
       const full = await readFile(resolved, "utf8");
       const lines = full.split(/\r\n|\r|\n/);
       const lineCount = lines.length;
@@ -262,4 +266,26 @@ function registerGetLog(server: McpServer, core: Core): void {
       };
     },
   );
+}
+
+/**
+ * Pick the log path for openspice_get_log from either an explicit path or an
+ * open design's most recent run (Requirement 10.1). Exactly one of path /
+ * design_id must be given. An unknown design id is DESIGN_NOT_FOUND; a design
+ * that has not been simulated yet is DESIGN_HAS_NO_RESULT (no log exists yet).
+ */
+function resolveLogPath(core: Core, path: string | undefined, designId: string | undefined): string {
+  const hasPath = typeof path === "string" && path !== "";
+  const hasDesign = typeof designId === "string" && designId !== "";
+  if (hasPath && hasDesign) throw new ToolError("INVALID_ARGUMENT", "provide either a path or a design_id, not both", { reason: "both path and design_id supplied" });
+  if (!hasPath && !hasDesign) throw new ToolError("INVALID_ARGUMENT", "provide a path or a design_id", { reason: "neither path nor design_id supplied" });
+  if (hasPath) return path as string;
+
+  const id = designId as string;
+  if (!core.designs.has(id)) throw new ToolError("DESIGN_NOT_FOUND", `no open design with id ${JSON.stringify(id)}`, { id });
+  const result = core.designs.lastResult(id);
+  if (result === null) {
+    throw new ToolError("DESIGN_HAS_NO_RESULT", `design ${JSON.stringify(id)} has not been simulated yet; no log exists`, { id });
+  }
+  return result.logPath;
 }

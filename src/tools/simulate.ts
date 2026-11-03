@@ -18,6 +18,7 @@ import { z } from "zod";
 import { readAsc } from "../asc.js";
 import { toNetlist } from "../ascnet.js";
 import type { Core } from "../core.js";
+import { ToolError } from "../errors.js";
 import { parse, type Netlist } from "../netlist.js";
 import { summarize } from "../raw.js";
 import { runSimulation } from "../runner.js";
@@ -36,7 +37,8 @@ export function registerSimulateTool(server: McpServer, core: Core): void {
         ".tran/.ac/.dc/.op/.noise directive; .step is emulated with a control loop into a stepped result; .meas runs in the same batch. Returns the " +
         "run status, the .raw and .log paths, a bounded downsampled waveform summary, parsed measurements, and the LTspice-compatibility " +
         "translations applied. An LTspice-only construct ngspice cannot run is reported as UNSUPPORTED_LTSPICE_FEATURE with its line; a failed or " +
-        "timed-out run is SIM_FAILED/SIM_TIMEOUT with a log tail.",
+        "timed-out run is SIM_FAILED/SIM_TIMEOUT with a log tail. Pass design_id (from openspice_designs) to associate this run's .raw/.log with " +
+        "that open design (Requirement 10.1); an unknown id fails with DESIGN_NOT_FOUND.",
       input: z
         .object({
           path: z.string().optional(),
@@ -46,11 +48,13 @@ export function registerSimulateTool(server: McpServer, core: Core): void {
           max_points: z.number().int().positive().optional(),
           timeout_ms: z.number().int().positive().optional(),
           step_device: z.record(z.string(), z.string()).optional(),
+          design_id: z.string().optional(),
         })
         .strict(),
       output: z.object({
         status: z.literal("ok"),
         source: z.object({ path: z.string().nullable(), kind: z.enum(["netlist", "asc"]) }),
+        design_id: z.string().nullable(),
         raw_path: z.string(),
         log_path: z.string(),
         run_dir: z.string(),
@@ -81,6 +85,13 @@ export function registerSimulateTool(server: McpServer, core: Core): void {
       const kind = resolveKind(args.kind, input.path);
       const warnings: string[] = [];
 
+      // Validate an optional design association up front so an unknown id fails
+      // with DESIGN_NOT_FOUND before any ngspice process is spawned (R10.1).
+      const designId = typeof args.design_id === "string" && args.design_id !== "" ? args.design_id : null;
+      if (designId !== null && !core.designs.has(designId)) {
+        throw new ToolError("DESIGN_NOT_FOUND", `no open design with id ${JSON.stringify(designId)}`, { id: designId });
+      }
+
       let netlist: Netlist;
       if (kind === "asc") {
         const schematic = readAsc(input.bytes);
@@ -100,9 +111,16 @@ export function registerSimulateTool(server: McpServer, core: Core): void {
 
       const summary = summarize(result.raw, args.variables ?? [], args.max_points ?? undefined);
 
+      // Associate the run's artifacts with the open design (R10.1). The id was
+      // validated above, so this cannot fail here.
+      if (designId !== null) {
+        core.designs.setResult(designId, { rawPath: result.rawPath, logPath: result.logPath, runDir: result.runDir });
+      }
+
       return {
         status: "ok" as const,
         source: { path: input.path, kind },
+        design_id: designId,
         raw_path: result.rawPath,
         log_path: result.logPath,
         run_dir: result.runDir,

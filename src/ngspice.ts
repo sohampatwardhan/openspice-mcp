@@ -4,7 +4,7 @@
  * tracked child module with a fixed argv and no shell, parses the version, and
  * reports whether that version meets the minimum for LTspice compatibility mode
  * (`set ngbehavior=lt`). The minimum is stated as 34 and marked uncertain, per
- * the design: the exact first release of each `lt`/`ltps`/`ltpsa` variant is not
+ * the design: the exact first release of each `lt`/`ltpsa` variant is not
  * confirmed here, so the probe reports the found version and the caveat.
  */
 

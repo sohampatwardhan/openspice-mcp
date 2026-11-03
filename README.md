@@ -50,14 +50,18 @@ Call `openspice_status` first. Every tool has a strict input schema, an output s
 | `openspice_raw_info` | `.raw` metadata only (no sample arrays). |
 | `openspice_export_waveforms` | Export selected `.raw` variables to CSV/ASCII inside the roots. |
 | `openspice_get_log` | Read a SPICE `.log` with parsed measurements and error lines. |
+| `openspice_designs` | Open-designs session: open / list / active / get_content / set_content / snapshot / restore / list_changed. |
+| `openspice_netlist_edit` | Apply `.meas` / `.step` / parameterize text helpers to a netlist (no simulation). |
+| `openspice_reference` | List or fetch local reference docs: OpenSPICE docs, ngspice manual pointers, and the user's LTspiceHelp. |
 
 ## Error codes
 
 | Code | Condition |
 | --- | --- |
+| `INVALID_ARGUMENT` | A tool argument was invalid or inconsistent (e.g. both or neither of `path`/`text` supplied, or an undetermined file kind). |
 | `PATH_OUTSIDE_ROOTS` | A path resolved outside every configured root; no IO or process started. |
 | `PATH_EXISTS` | A write target exists and `overwrite` was not set; the existing file is unchanged. |
-| `CONTENT_TOO_LARGE` | Input exceeds the file/inline size limit, or path and inline text were both/neither supplied. |
+| `CONTENT_TOO_LARGE` | Input exceeds the configured file or inline-text size limit; it is not parsed. |
 | `GENERATE_INVALID` | A circuit description was inconsistent; no file written. |
 | `GENERATE_UNVERIFIED` | A generated `.asc` did not round-trip to the intended connectivity (strict mode). |
 | `UNSUPPORTED_LTSPICE_FEATURE` | An LTspice-only construct ngspice cannot run or translate; the construct and line are named. |
@@ -66,6 +70,7 @@ Call `openspice_status` first. Every tool has a strict input schema, an output s
 | `SIM_FAILED` | ngspice exited nonzero or reported a convergence/syntax error; the log tail is returned. |
 | `RAW_PARSE_FAILED` | A `.raw` file was truncated or had an unknown header. |
 | `DESIGN_NOT_FOUND` | An unknown open-design id was referenced. |
+| `DESIGN_HAS_NO_RESULT` | A design's run artifacts were requested (e.g. its log) before it had been simulated. |
 | `BRIDGE_UNAVAILABLE` | The optional LTspice MCP bridge is disabled, absent, or failed; the file-based path is used when available. |
 | `INTERNAL_ERROR` | An unexpected error; the message carries the detail. |
 

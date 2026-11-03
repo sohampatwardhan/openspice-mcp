@@ -125,6 +125,27 @@ function normalise(text: string): string {
   return text.replace(/\r\n|\r/g, "\n");
 }
 
+/**
+ * Encode `.asc`/`.asy` text back to the bytes LTspice reads, in the given
+ * encoding and with CRLF line endings (the LTspice convention, Requirement
+ * 18.1). Used to write a schematic back while preserving the file's original
+ * encoding. A UTF-16 BOM is emitted for the UTF-16 encodings; UTF-8-BOM keeps
+ * its BOM.
+ */
+export function encodeText(text: string, encoding: Encoding): Buffer {
+  const crlf = text.replace(/\r\n|\r|\n/g, "\r\n");
+  switch (encoding) {
+    case "utf-16le":
+      return Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(crlf, "utf16le")]);
+    case "utf-16be":
+      return Buffer.concat([Buffer.from([0xfe, 0xff]), swap16(Buffer.from(crlf, "utf16le"))]);
+    case "utf-8-bom":
+      return Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(crlf, "utf8")]);
+    default:
+      return Buffer.from(crlf, "utf8");
+  }
+}
+
 function swap16(buf: Buffer): Buffer {
   const out = Buffer.from(buf);
   if (out.length % 2 === 1) return out;

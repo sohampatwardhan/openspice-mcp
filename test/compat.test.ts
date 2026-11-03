@@ -11,9 +11,24 @@ describe("spiceinitContents", () => {
     assert.match(text, /set ngbehavior=lt/);
   });
 
-  it("adds ltps/ltpsa variants when PSpice-style libraries appear", () => {
+  it("selects the ltpsa variant when PSpice-style libraries appear", () => {
     const text = spiceinitContents(["pspice"]);
-    assert.match(text, /ngbehavior=ltpsa|ngbehavior=ltps/);
+    assert.match(text, /set ngbehavior=ltpsa/);
+  });
+});
+
+describe("prepareCompat ltpsa selection", () => {
+  it("uses ltpsa for a netlist that includes a PSpice-style library", () => {
+    const n = parse("p\nV1 in 0 1\nR1 in 0 1k\n.lib mypspice.lib\n.op\n.end\n");
+    const prep = prepareCompat(n);
+    assert.equal(prep.mode, "ltpsa");
+    assert.match(prep.spiceinit, /set ngbehavior=ltpsa/);
+  });
+
+  it("stays in lt for an ordinary .lib include", () => {
+    const n = parse("p\nV1 in 0 1\nR1 in 0 1k\n.lib mymodels.lib\n.op\n.end\n");
+    const prep = prepareCompat(n);
+    assert.equal(prep.mode, "lt");
   });
 });
 

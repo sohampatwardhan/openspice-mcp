@@ -2,6 +2,8 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 /** Every code a tool error may carry. New codes also go in the README error table. */
 export type ErrorCode =
+  // Arguments
+  | "INVALID_ARGUMENT"
   // Paths and content
   | "PATH_OUTSIDE_ROOTS"
   | "PATH_EXISTS"
@@ -19,12 +21,14 @@ export type ErrorCode =
   | "RAW_PARSE_FAILED"
   // Designs
   | "DESIGN_NOT_FOUND"
+  | "DESIGN_HAS_NO_RESULT"
   // Optional bridge extra
   | "BRIDGE_UNAVAILABLE"
   // Catch-all
   | "INTERNAL_ERROR";
 
 export const ERROR_CODES: readonly ErrorCode[] = [
+  "INVALID_ARGUMENT",
   "PATH_OUTSIDE_ROOTS",
   "PATH_EXISTS",
   "CONTENT_TOO_LARGE",
@@ -36,6 +40,7 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "SIM_FAILED",
   "RAW_PARSE_FAILED",
   "DESIGN_NOT_FOUND",
+  "DESIGN_HAS_NO_RESULT",
   "BRIDGE_UNAVAILABLE",
   "INTERNAL_ERROR",
 ];

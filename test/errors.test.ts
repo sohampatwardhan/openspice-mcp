@@ -34,7 +34,7 @@ describe("tool errors", () => {
   it("lists every ErrorCode exactly once", () => {
     const seen = new Set(ERROR_CODES);
     assert.equal(seen.size, ERROR_CODES.length);
-    for (const required of ["UNSUPPORTED_LTSPICE_FEATURE", "GENERATE_UNVERIFIED", "BRIDGE_UNAVAILABLE", "DESIGN_NOT_FOUND"] as const) {
+    for (const required of ["UNSUPPORTED_LTSPICE_FEATURE", "GENERATE_UNVERIFIED", "BRIDGE_UNAVAILABLE", "DESIGN_NOT_FOUND", "INVALID_ARGUMENT"] as const) {
       assert.ok(seen.has(required), `${required} is in ERROR_CODES`);
     }
   });

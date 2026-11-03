@@ -23,8 +23,8 @@ export interface ResolvedInput {
 export async function resolveInput(core: Core, args: { path?: string | undefined; text?: string | undefined }): Promise<ResolvedInput> {
   const hasPath = typeof args.path === "string" && args.path !== "";
   const hasText = typeof args.text === "string";
-  if (hasPath && hasText) throw new ToolError("CONTENT_TOO_LARGE", "provide either a path or inline text, not both", { reason: "both path and text supplied" });
-  if (!hasPath && !hasText) throw new ToolError("CONTENT_TOO_LARGE", "provide a path or inline text", { reason: "neither path nor text supplied" });
+  if (hasPath && hasText) throw new ToolError("INVALID_ARGUMENT", "provide either a path or inline text, not both", { reason: "both path and text supplied" });
+  if (!hasPath && !hasText) throw new ToolError("INVALID_ARGUMENT", "provide a path or inline text", { reason: "neither path nor text supplied" });
 
   if (hasText) {
     const text = args.text as string;

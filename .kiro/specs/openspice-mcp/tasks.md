@@ -163,19 +163,19 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/plot.ts`: `renderPlot(...)` writing an SVG only when plotting is enabled; a plotting-disabled request returns a diagnostic plus the numeric summary
   - _Requirements: 4.4, 5.5, 5.6, 6.1, 6.2, 7.1, 7.2, 7.4, 7.5, 7.7, 8.3, 10.1, 10.4, 11.2, 11.3, 15.3_
 
-- [ ] 13. Implement the reference indexer
+- [x] 13. Implement the reference indexer
   - `src/refdoc.ts`: `list()`/`get(id)` over OpenSPICE's own bundled docs, ngspice-manual pointers, and the user's local `LTspiceHelp` folder only when present and inside an allowed location; read LTspice help only from the user's files; ship no ADI content
   - _Requirements: 13.1, 13.2, 13.3, 13.4_
 
-- [ ] 14. Implement netlist text helpers
+- [x] 14. Implement netlist text helpers
   - `src/edits.ts`: `addMeas(text, spec)`, `addStep(text, param, values)`, `parameterize(text, device, name)` over netlist text, each returning edited text or an absent-target diagnostic, never simulating
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [ ] 15. Implement the open-designs session store
+- [x] 15. Implement the open-designs session store
   - `src/designs.ts`: `open`, `list`, `active`, `getContent`, `setContent` (validate -> optional snapshot -> write in LTspice-openable bytes; parse error -> no write), `restore`, `listChanged(cursor)`; associate each design with its latest `.raw`/`.log`
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 10.1_
 
-- [ ] 16. Add the designs, netlist-edit, and reference tools
+- [x] 16. Add the designs, netlist-edit, and reference tools
   - `src/tools/designs.ts` (`openspice_designs`: open/list/active/get_content/set_content/snapshot/restore/list_changed; `DESIGN_NOT_FOUND`), `openspice_netlist_edit` (`.meas`/`.step`/parameterize), `src/tools/reference.ts` (`openspice_reference`: list/get)
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 12.1, 12.2, 12.3, 12.4, 13.1, 13.2, 13.3_
 
