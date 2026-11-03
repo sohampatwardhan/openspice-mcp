@@ -118,7 +118,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Implement `src/config.ts` (env vars `OPENSPICE_ROOTS`, `OPENSPICE_NGSPICE_BIN`, `OPENSPICE_ALLOW_PLOTS`, `OPENSPICE_LTSPICE_HELP_DIR`, `OPENSPICE_SYMBOL_PATH`, plus the off-by-default `OPENSPICE_ENABLE_LTSPICE`, `OPENSPICE_LTSPICE_BIN`, `OPENSPICE_ENABLE_BRIDGE`, `OPENSPICE_BRIDGE_BIN`, `OPENSPICE_WINE_BIN`, timeouts, `LIMITS`), `src/errors.ts` (`ErrorCode` union incl. `UNSUPPORTED_LTSPICE_FEATURE`, `GENERATE_UNVERIFIED`, `BRIDGE_UNAVAILABLE`, `DESIGN_NOT_FOUND`), `src/paths.ts` (`Roots`: `realpath`, `resolveInside`, `ensureWritable`, `makeRunDir`, `snapshotDir`)
   - _Requirements: 8.1, 8.3, 8.4_
 
-- [ ] 3. Implement the netlist parser and validator
+- [x] 3. Implement the netlist parser and validator
   - `src/netlist.ts`: `parse(text)`, `validate(netlist)`, `emit(netlist)` with per-line diagnostics; resolve `.include`/`.lib` relative to the source dir and confine to roots at the tool layer
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
