@@ -70,6 +70,7 @@ Call `openspice_status` first. Every tool has a strict input schema, an output s
 | `SIM_FAILED` | ngspice exited nonzero or reported a convergence/syntax error; the log tail is returned. |
 | `RAW_PARSE_FAILED` | A `.raw` file was truncated or had an unknown header. |
 | `DESIGN_NOT_FOUND` | An unknown open-design id was referenced. |
+| `DESIGN_HAS_NO_RESULT` | A design's run artifacts were requested (e.g. its log) before it had been simulated. |
 | `BRIDGE_UNAVAILABLE` | The optional LTspice MCP bridge is disabled, absent, or failed; the file-based path is used when available. |
 | `INTERNAL_ERROR` | An unexpected error; the message carries the detail. |
 

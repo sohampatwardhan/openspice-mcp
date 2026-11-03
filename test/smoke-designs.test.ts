@@ -4,12 +4,15 @@
 // exercised against real ngspice 44.2 when present.
 import assert from "node:assert/strict";
 import { existsSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
 import { connect } from "./smoke-helpers.js";
 
 const hasReal = existsSync("/usr/bin/ngspice");
+const here = dirname(fileURLToPath(import.meta.url));
+const fakeNgspice = join(here, "..", "..", "test", "fixtures", "fake-ngspice.mjs");
 
 interface Structured {
   structuredContent?: Record<string, unknown>;
@@ -182,6 +185,58 @@ describe("openspice_reference", () => {
       const res = await callTool(c.client, "openspice_reference", { action: "get", id: "nope" });
       assert.equal(res.isError, true);
       assert.match(res.content[0]?.text ?? "", /INVALID_ARGUMENT/);
+    } finally {
+      await c.close();
+    }
+  });
+});
+
+describe("openspice_simulate design association (Requirement 10.1)", () => {
+  const RC_NETLIST = "rc\nV1 in 0 1\nR1 in out 1k\nC1 out 0 1u\n.tran 1u 1m\n.end\n";
+
+  it("records the run's raw/log on the open design and serves its log by design_id", async () => {
+    const c = await connect({ env: { OPENSPICE_NGSPICE_BIN: fakeNgspice } });
+    try {
+      writeFileSync(join(c.work, "rc.cir"), RC_NETLIST);
+      const open = await callTool(c.client, "openspice_designs", { action: "open", path: "rc.cir" });
+      const id = (open.structuredContent as any).design.id as string;
+
+      const sim = await callTool(c.client, "openspice_simulate", { path: "rc.cir", design_id: id });
+      assert.equal(sim.isError ?? false, false, sim.content[0]?.text);
+      const s = sim.structuredContent as Record<string, any>;
+      assert.equal(s.design_id, id);
+
+      const log = await callTool(c.client, "openspice_get_log", { design_id: id });
+      assert.equal(log.isError ?? false, false, log.content[0]?.text);
+      const l = log.structuredContent as Record<string, any>;
+      assert.equal(l.source.path, s.log_path);
+      assert.ok(l.text.length > 0);
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("fails with DESIGN_NOT_FOUND when simulating against an unknown design id", async () => {
+    const c = await connect({ env: { OPENSPICE_NGSPICE_BIN: fakeNgspice } });
+    try {
+      writeFileSync(join(c.work, "rc.cir"), RC_NETLIST);
+      const res = await callTool(c.client, "openspice_simulate", { path: "rc.cir", design_id: "design-404" });
+      assert.equal(res.isError, true);
+      assert.match(res.content[0]?.text ?? "", /DESIGN_NOT_FOUND/);
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("reports no log for a design that has not been simulated", async () => {
+    const c = await connect({ env: { OPENSPICE_NGSPICE_BIN: fakeNgspice } });
+    try {
+      writeFileSync(join(c.work, "rc.cir"), RC_NETLIST);
+      const open = await callTool(c.client, "openspice_designs", { action: "open", path: "rc.cir" });
+      const id = (open.structuredContent as any).design.id as string;
+      const res = await callTool(c.client, "openspice_get_log", { design_id: id });
+      assert.equal(res.isError, true);
+      assert.match(res.content[0]?.text ?? "", /DESIGN_HAS_NO_RESULT|no .*result/i);
     } finally {
       await c.close();
     }

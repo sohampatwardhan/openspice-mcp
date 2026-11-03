@@ -202,6 +202,11 @@ export class Designs {
     return { changed, cursor: this.seq };
   }
 
+  /** True when a design with this id is open. */
+  has(id: string): boolean {
+    return this.byId.has(id);
+  }
+
   /** Associate a design with its latest run result (Requirement 10.1). */
   setResult(id: string, result: DesignResult): void {
     this.require(id).result = result;

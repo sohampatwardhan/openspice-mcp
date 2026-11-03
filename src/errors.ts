@@ -21,6 +21,7 @@ export type ErrorCode =
   | "RAW_PARSE_FAILED"
   // Designs
   | "DESIGN_NOT_FOUND"
+  | "DESIGN_HAS_NO_RESULT"
   // Optional bridge extra
   | "BRIDGE_UNAVAILABLE"
   // Catch-all
@@ -39,6 +40,7 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "SIM_FAILED",
   "RAW_PARSE_FAILED",
   "DESIGN_NOT_FOUND",
+  "DESIGN_HAS_NO_RESULT",
   "BRIDGE_UNAVAILABLE",
   "INTERNAL_ERROR",
 ];
