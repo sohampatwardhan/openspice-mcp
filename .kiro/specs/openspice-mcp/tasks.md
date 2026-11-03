@@ -113,7 +113,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Keep a `release.yml` matching the sibling (tag `vX.Y.Z` gate, npm trusted publishing with provenance, GitHub release, GitHub Packages mirror)
   - Gates every later task: it must pass before task 2 starts
 
-- [ ] 2. Scaffold the project and the safety core
+- [x] 2. Scaffold the project and the safety core
   - Add `package.json` (`@sohampatwardhan/openspice-mcp`, bin `openspice-mcp`, deps `@modelcontextprotocol/sdk` + `zod` only), `tsconfig.json`, `AGENTS.md`, `CLAUDE.md` mirroring the sibling repo
   - Implement `src/config.ts` (env vars `OPENSPICE_ROOTS`, `OPENSPICE_NGSPICE_BIN`, `OPENSPICE_ALLOW_PLOTS`, `OPENSPICE_LTSPICE_HELP_DIR`, `OPENSPICE_SYMBOL_PATH`, plus the off-by-default `OPENSPICE_ENABLE_LTSPICE`, `OPENSPICE_LTSPICE_BIN`, `OPENSPICE_ENABLE_BRIDGE`, `OPENSPICE_BRIDGE_BIN`, `OPENSPICE_WINE_BIN`, timeouts, `LIMITS`), `src/errors.ts` (`ErrorCode` union incl. `UNSUPPORTED_LTSPICE_FEATURE`, `GENERATE_UNVERIFIED`, `BRIDGE_UNAVAILABLE`, `DESIGN_NOT_FOUND`), `src/paths.ts` (`Roots`: `realpath`, `resolveInside`, `ensureWritable`, `makeRunDir`, `snapshotDir`)
   - _Requirements: 8.1, 8.3, 8.4_

@@ -1,0 +1,55 @@
+{
+  "name": "@sohampatwardhan/openspice-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that lets AI agents work with SPICE circuits through typed tools: parse and validate netlists, read LTspice schematics, convert and generate .asc, and simulate with ngspice in LTspice-compatibility mode. ngspice is the one required engine; files it writes open in LTspice.",
+  "license": "MIT",
+  "author": "Soham Patwardhan",
+  "homepage": "https://github.com/sohampatwardhan/openspice-mcp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sohampatwardhan/openspice-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sohampatwardhan/openspice-mcp/issues"
+  },
+  "type": "module",
+  "bin": {
+    "openspice-mcp": "dist/src/index.js"
+  },
+  "main": "./dist/src/server.js",
+  "files": [
+    "dist/src",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('node:fs').chmodSync('dist/src/index.js', 0o755)\"",
+    "prepack": "npm run build",
+    "start": "node dist/src/index.js",
+    "test": "npm run build && node --test --test-concurrency=4 dist/test/*.test.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "spice",
+    "ngspice",
+    "ltspice",
+    "netlist",
+    "circuit-simulation",
+    "eda"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.9.3"
+  }
+}
