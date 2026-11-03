@@ -21,20 +21,23 @@ describe("server surface", () => {
     }
   });
 
-  it("advertises the tools capability and the task-12 tool set", async () => {
+  it("advertises the tools capability and the full tool set", async () => {
     const c = await connect();
     try {
       assert.ok(c.client.getServerCapabilities()?.tools);
       const list = await c.client.listTools();
       const names = list.tools.map((t) => t.name).sort();
       assert.deepEqual(names, [
+        "openspice_designs",
         "openspice_export_waveforms",
         "openspice_generate_schematic",
         "openspice_get_log",
+        "openspice_netlist_edit",
         "openspice_parse_netlist",
         "openspice_raw_info",
         "openspice_read_raw",
         "openspice_read_schematic",
+        "openspice_reference",
         "openspice_schematic_to_netlist",
         "openspice_simulate",
         "openspice_status",

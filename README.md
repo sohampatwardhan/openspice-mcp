@@ -50,6 +50,9 @@ Call `openspice_status` first. Every tool has a strict input schema, an output s
 | `openspice_raw_info` | `.raw` metadata only (no sample arrays). |
 | `openspice_export_waveforms` | Export selected `.raw` variables to CSV/ASCII inside the roots. |
 | `openspice_get_log` | Read a SPICE `.log` with parsed measurements and error lines. |
+| `openspice_designs` | Open-designs session: open / list / active / get_content / set_content / snapshot / restore / list_changed. |
+| `openspice_netlist_edit` | Apply `.meas` / `.step` / parameterize text helpers to a netlist (no simulation). |
+| `openspice_reference` | List or fetch local reference docs: OpenSPICE docs, ngspice manual pointers, and the user's LTspiceHelp. |
 
 ## Error codes
 
