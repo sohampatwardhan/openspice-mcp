@@ -195,7 +195,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Create `test/corpus/<case>/` fixtures (`input.cir`/`input.asc`, `expected.net`, optional `expected.meas.json` with tolerances, `notes.md`), a runner that parses, netlists, runs ngspice through the compat layer, and compares within tolerance, plus cases for each newly supported/translated or unsupported construct; run it in the task-1 CI `test` job. Leave room for the owner's undergrad LTspice circuits
   - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
-- [ ] 21. Author the bundled skill and its version check
+- [x] 21. Author the bundled skill and its version check
   - Add `skills/openspice/SKILL.md` (quoted SemVer `metadata.version`) teaching probing, open/edit designs, parse/validate, generate (round-trip), simulate with ngspice + compatibility, read results/log, export, LTspice-compatible raw, and reference lookup, noting the LTspice backend and bridge as optional Windows-x64 extras, plus `references/` for a tool cheat sheet, the parity map, the compatibility table, and failure recovery
   - Add `scripts/check-skill-versions.mjs` (sibling-style) and confirm the task-1 `skills` CI job installs it cleanly
   - _Requirements: 1.1_
