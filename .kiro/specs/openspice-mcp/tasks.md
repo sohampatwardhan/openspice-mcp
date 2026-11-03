@@ -122,7 +122,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/netlist.ts`: `parse(text)`, `validate(netlist)`, `emit(netlist)` with per-line diagnostics; resolve `.include`/`.lib` relative to the source dir and confine to roots at the tool layer
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 4. Implement the .asc/.asy reader and symbol resolution
+- [x] 4. Implement the .asc/.asy reader and symbol resolution
   - `src/asc.ts`: `readAsc`/`readAsy` with UTF-16/UTF-8(+BOM)/CRLF decoding and detected-encoding reporting; model components, wires, flags, directives; retain unknown keywords as raw entries with a diagnostic
   - Ship a minimal open symbol set and resolve symbols from it, a configured `OPENSPICE_SYMBOL_PATH`, or the user's LTspice `sym` folder only when installed and inside an allowed location
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.2_
