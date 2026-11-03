@@ -6,33 +6,34 @@ inclusion: always
 
 ## Runtime
 
-TypeScript, ESM, Node.js 20+. Strict `tsc` (`noUncheckedIndexedAccess`, `noImplicitOverride`) is the static check; there is no separate lint script. MCP surface uses `@modelcontextprotocol/sdk`; schemas use `zod`. Those two are the only runtime dependencies — parsers, codecs, the `.asc` emitter, and the text helpers are written in-repo. Published as `@sohampatwardhan/openspice-mcp`, run with `npx -y @sohampatwardhan/openspice-mcp@latest`.
+TypeScript, ESM, Node.js 20+. Strict `tsc` (`noUncheckedIndexedAccess`, `noImplicitOverride`) is the static check; there is no separate lint script. MCP surface uses `@modelcontextprotocol/sdk`; schemas use `zod`. Those two are the only runtime dependencies — parsers, codecs, the `.asc` emitter, the LTspice-compatible `.raw` writer, and the text helpers are written in-repo. Published as `@sohampatwardhan/openspice-mcp`, run with `npx -y @sohampatwardhan/openspice-mcp@latest`.
 
-## Parity target and integrations
+## Simulation engine
 
-OpenSPICE-MCP targets feature parity with Analog Devices' official LTspice MCP server (LTspice 26.1.1, `ltspice-mcp-bridge.exe`, help page `Third_Party_AI_Tools.htm`) while working cross-platform and file-based. The parity table and tool mapping live in `design.md`.
+**ngspice is the sole required simulation engine**, on Windows (x64 and ARM64), macOS, and Linux, and in CI. LTspice was the inspiration for the file formats, not a runtime dependency. LTspice-flavoured netlists (and netlists converted from `.asc`) run under ngspice's LTspice compatibility mode: `set ngbehavior=lt` (plus the `ltps`/`ltpsa` variants when PSpice-style libraries are pulled in), written into a per-run `.spiceinit`/control block the server controls — never the user's global config. Minimum ngspice version for compatibility mode is stated as **34+ (uncertain; verify against the ngspice manual for the host)** and reported by the status tool.
 
-No database. External integrations are the simulation backends and the optional bridge only:
+## File-format fidelity (hard requirement)
 
-- ngspice (open source; Linux/macOS/Windows; the CI backend; fully supported everywhere).
-- LTspice: Windows native `-b` batch; Linux via Wine; the native macOS app with weaker batch support (best-effort).
-- Optional delegation: on **Windows x64** with LTspice >= 26.1.1, `ltspice-mcp-bridge.exe` can be driven as an MCP client subprocess (`--headless` by default; `--pid`/`--port` loopback attach for live-GUI edits that enter LTspice's undo history; `--ltspice-path`/`LTSPICE_INSTALL_DIR`; `--list`). Never required; the file-based path is always the default.
+Files OpenSPICE writes must open in LTspice even though simulation uses ngspice:
 
-File formats handled in-repo: SPICE netlists, LTspice `.asc`/`.asy`, and `.raw`/`.log` results. Format knowledge is credited to spicelib / PyLTSpice (Nuno Brum) and the ngspice manual; no code is copied and no ADI documentation is bundled.
+- `.asc`/`.asy`: written in LTspice's line-based keyword grammar with LTspice's encoding/line-ending convention (CRLF; UTF-16LE vs UTF-8 varies by LTspice build — treated as **uncertain** and recorded per write).
+- `.raw`: ngspice produces a Berkeley rawfile (ASCII header, `set filetype=binary|ascii`, IEEE-754 payload whose precision is read from the header). When an LTspice-openable result is wanted, the server also writes an LTspice binary `.raw` (UTF-16LE header, `Flags: real/complex/double/stepped/forward`, float64 time axis + float32 traces for a real transient — **uncertain** field widths per analysis) and keeps ngspice's original. Every LTspice-compatible raw is round-trip-verified by re-reading it with our own parser; if a reliable one cannot be produced, the ngspice-native artifact is returned with a diagnostic.
 
-## Platform notes
+Any format or compatibility detail not yet confirmed against real LTspice files is marked **uncertain** and pinned by the compatibility test corpus rather than guessed.
 
-- The official LTspice MCP is in the **Windows x64** build only (26.1.1). The native **Windows ARM64** build (`LTspice64_arm.msi`) and the **macOS** build (`LTspice_26.pkg`, macOS 10.15+, so current macOS such as macOS 27 installs it) are still **26.0.2 with no MCP**. The x64 MSI refuses to install on Windows ARM64, and the extracted x64 exe will not start under emulation there. Bridge delegation is therefore Windows-x64 only; elsewhere the status tool reports it unavailable with a reason.
-- LTspice batch simulation: strong on Windows, available on Linux via Wine, best-effort on the native macOS app. macOS 27 is fine for the macOS LTspice pkg and for ngspice with no special handling beyond marking macOS LTspice batch best-effort.
+## Optional extras (Windows x64, off by default, last)
+
+A native LTspice simulation backend and a proxy to ADI's official `ltspice-mcp-bridge.exe` are optional, Windows-x64-only, and never required. The bridge runs `--headless` by default and attaches to an open GUI (`--pid`/`--port`, loopback) only when the caller explicitly asks. Off Windows x64 the status tool reports both unavailable with a reason.
 
 ## Constraints
 
-- No shell tool, no raw argv, no free-form flag field. Backend and bridge command vectors are built in one module (`argv.ts`); children are spawned detached, `shell: false`, tracked, and group-killed (`children.ts`).
-- Every path goes through `Roots` (`realpath`) before any read, write, or spawn; outputs refuse to overwrite unless asked. Open designs are an in-memory file-based session; `set_content` validates before writing and can snapshot for undo.
-- The `.asc` generator round-trips its output (netlist it, compare connectivity) and never presents an unverified schematic as verified — the answer to ADI's "AI draws schematics poorly" caveat.
+- No shell tool, no raw argv, no free-form flag field. Command vectors are built in one module (`argv.ts`); children are spawned detached, `shell: false`, tracked, group-killed (`children.ts`).
+- Every path goes through `Roots` (`realpath`) before any read, write, or spawn; outputs refuse to overwrite unless asked. Compatibility settings go in a per-run file, never the user's global `.spiceinit`.
+- LTspice-only constructs ngspice cannot run identically are translated when safe, else fail with `UNSUPPORTED_LTSPICE_FEATURE` naming the construct and line. `.step` is emulated with an ngspice control loop and a stepped raw.
+- The `.asc` generator round-trips its output (netlist it, compare connectivity) and never presents an unverified schematic as verified.
 - Tools have strict input schemas (`additionalProperties: false`), an `outputSchema`, and return `structuredContent`; errors are `{ error: { code, message, details } }`.
-- Config env vars include `OPENSPICE_ROOTS`, `OPENSPICE_NGSPICE_BIN`, `OPENSPICE_LTSPICE_BIN`, `OPENSPICE_WINE_BIN`, `OPENSPICE_BRIDGE_BIN`, `OPENSPICE_ALLOW_BRIDGE`, `OPENSPICE_ALLOW_PLOTS`, `OPENSPICE_BACKEND_ORDER`, `OPENSPICE_LTSPICE_HELP_DIR`.
-- Tests never require a real LTspice or the real bridge; ngspice or fake backend/bridge fixtures run in CI. Plotting and bridge delegation are off by default.
+- Config env vars: `OPENSPICE_ROOTS`, `OPENSPICE_NGSPICE_BIN`, `OPENSPICE_ALLOW_PLOTS`, `OPENSPICE_LTSPICE_HELP_DIR`, `OPENSPICE_SYMBOL_PATH`, and the off-by-default `OPENSPICE_ENABLE_LTSPICE`/`OPENSPICE_LTSPICE_BIN`, `OPENSPICE_ENABLE_BRIDGE`/`OPENSPICE_BRIDGE_BIN`, `OPENSPICE_WINE_BIN`.
+- Tests never require a real LTspice or the bridge; ngspice or fake fixtures run in CI. A compatibility corpus with golden expectations and tolerances runs in CI. Plotting and the extras are off by default.
 
 ```mermaid
 ---
@@ -41,10 +42,9 @@ config:
 ---
 flowchart TB
   client["MCP client"] --> server["openspice-mcp (SDK + zod)"]
-  server --> engine["In-repo parsers + emitter + raw reader + helpers"]
-  server --> runner["Backend runner (fixed argv)"]
-  server --> bridge["Optional bridge proxy (Win x64)"]
-  runner --> ng["ngspice (CI, all platforms)"]
-  runner --> lt["LTspice (native / Wine)"]
-  bridge --> bexe["ltspice-mcp-bridge.exe"]
+  server --> engine["In-repo parsers + emitter + raw reader/writer + helpers"]
+  server --> compat["LTspice compatibility layer"]
+  compat --> runner["ngspice runner (required, all platforms)"]
+  server -. optional .-> lt["LTspice backend (Win x64)"]
+  server -. optional .-> bridge["LTspice MCP bridge (Win x64)"]
 ```
