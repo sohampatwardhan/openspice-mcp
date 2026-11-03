@@ -269,5 +269,5 @@ function resolveKind(explicit: "asc" | "asy" | undefined, path: string | null): 
   if (path !== null && path.toLowerCase().endsWith(".asc")) return "asc";
   // Inline text without a kind: default to schematic.
   if (path === null) return "asc";
-  throw new ToolError("CONTENT_TOO_LARGE", `cannot tell whether ${JSON.stringify(path)} is a .asc or .asy; pass kind`, { path });
+  throw new ToolError("INVALID_ARGUMENT", `cannot tell whether ${JSON.stringify(path)} is a .asc or .asy; pass kind`, { path });
 }

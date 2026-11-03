@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import { after, describe, it } from "node:test";
 
 import { ConfigError, LIMITS, loadConfig } from "../src/config.js";
@@ -52,6 +52,15 @@ describe("loadConfig", () => {
     assert.equal(c.bridgeBin, "/opt/ltspice-mcp-bridge.exe");
     assert.equal(c.wineBin, "/usr/bin/wine");
     assert.equal(c.simTimeoutMs, 5000);
+  });
+
+  it("splits OPENSPICE_SYMBOL_PATH on the OS path delimiter, not a bare colon", () => {
+    const a = join(tmp, "syms-a");
+    const b = join(tmp, "syms-b");
+    mkdirSync(a, { recursive: true });
+    mkdirSync(b, { recursive: true });
+    const c = loadConfig({ ...base, OPENSPICE_SYMBOL_PATH: `${a}${delimiter}${b}` });
+    assert.deepEqual(c.symbolPath, [a, b]);
   });
 
   it("treats 0, false, no, and blank as off", () => {

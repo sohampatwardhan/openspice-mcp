@@ -1,8 +1,8 @@
 /**
  * LTspice compatibility layer (Requirement 15). Builds the per-run
  * `.spiceinit` control settings that put ngspice into LTspice mode
- * (`set ngbehavior=lt`, with the `ltps`/`ltpsa` variants when PSpice-style
- * libraries appear), and inspects a parsed netlist for LTspice-only constructs:
+ * (`set ngbehavior=lt`, switching to the `ltpsa` variant when a PSpice-style
+ * library appears), and inspects a parsed netlist for LTspice-only constructs:
  * the safe ones are translated and recorded, the rest raise
  * `UNSUPPORTED_LTSPICE_FEATURE` naming the construct and its 1-based line.
  *
@@ -30,8 +30,13 @@ export interface Translation {
 export interface CompatPrep {
   /** Contents of the per-run `.spiceinit` the runner writes into the run dir. */
   spiceinit: string;
-  /** ngbehavior mode token actually used (`lt`, `ltps`, or `ltpsa`). */
-  mode: "lt" | "ltps" | "ltpsa";
+  /**
+   * ngbehavior mode token actually used: `lt` for a plain LTspice-flavoured
+   * deck, `ltpsa` when a PSpice-style library is pulled in. ngspice also accepts
+   * a bare `ltps`, but OpenSPICE never needs it: the PSpice-style path always
+   * wants the `a` (all) handling, so only `lt` and `ltpsa` are produced.
+   */
+  mode: "lt" | "ltpsa";
   /** Safe translations applied, each recorded for the caller. */
   translations: Translation[];
 }
@@ -63,7 +68,7 @@ export const COMPAT_UNSUPPORTED: readonly string[] = [
 
 /** True when the netlist pulls in a PSpice-style library (selects the ltpsa variant). */
 function usesPspiceLibraries(netlist: Netlist): boolean {
-  return netlist.includes.some((inc) => /pspice|\.lib$/i.test(inc.path) && /pspice/i.test(inc.path));
+  return netlist.includes.some((inc) => /pspice/i.test(inc.path));
 }
 
 /** Build the per-run `.spiceinit` body. `libKinds` flags any PSpice-style libs seen. */

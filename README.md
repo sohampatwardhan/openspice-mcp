@@ -55,9 +55,10 @@ Call `openspice_status` first. Every tool has a strict input schema, an output s
 
 | Code | Condition |
 | --- | --- |
+| `INVALID_ARGUMENT` | A tool argument was invalid or inconsistent (e.g. both or neither of `path`/`text` supplied, or an undetermined file kind). |
 | `PATH_OUTSIDE_ROOTS` | A path resolved outside every configured root; no IO or process started. |
 | `PATH_EXISTS` | A write target exists and `overwrite` was not set; the existing file is unchanged. |
-| `CONTENT_TOO_LARGE` | Input exceeds the file/inline size limit, or path and inline text were both/neither supplied. |
+| `CONTENT_TOO_LARGE` | Input exceeds the configured file or inline-text size limit; it is not parsed. |
 | `GENERATE_INVALID` | A circuit description was inconsistent; no file written. |
 | `GENERATE_UNVERIFIED` | A generated `.asc` did not round-trip to the intended connectivity (strict mode). |
 | `UNSUPPORTED_LTSPICE_FEATURE` | An LTspice-only construct ngspice cannot run or translate; the construct and line are named. |

@@ -2,6 +2,8 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 /** Every code a tool error may carry. New codes also go in the README error table. */
 export type ErrorCode =
+  // Arguments
+  | "INVALID_ARGUMENT"
   // Paths and content
   | "PATH_OUTSIDE_ROOTS"
   | "PATH_EXISTS"
@@ -25,6 +27,7 @@ export type ErrorCode =
   | "INTERNAL_ERROR";
 
 export const ERROR_CODES: readonly ErrorCode[] = [
+  "INVALID_ARGUMENT",
   "PATH_OUTSIDE_ROOTS",
   "PATH_EXISTS",
   "CONTENT_TOO_LARGE",

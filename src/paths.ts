@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, realpathSync, statSync } from "node:fs";
-import { mkdir, realpath } from "node:fs/promises";
+import { lstat, mkdir, realpath } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import { ToolError } from "./errors.js";
@@ -72,16 +72,41 @@ export class Roots {
     return real;
   }
 
-  /** Resolve a path that may not exist yet: its parent directory must exist inside a root. */
+  /**
+   * Resolve a write target that may not exist yet. The target's nearest existing
+   * ancestor directory is resolved with `realpath` and must be inside a root, so
+   * writing never escapes the roots through a symlinked ancestor or a path whose
+   * parents do not exist yet. An existing final component that is a symlink is
+   * refused outright: a write must land on the named path, never silently follow
+   * a link (even one whose target is inside the roots).
+   */
   async resolveForWrite(path: string, base: string = this.primary): Promise<string> {
     const absolute = resolve(base, path);
+
+    // A final component that already exists as a symlink is not a safe write target.
+    let link;
     try {
-      return await this.resolveInside(absolute);
-    } catch (err) {
-      if (!(err instanceof ToolError) || err.details.reason !== "does not exist") throw err;
+      link = await lstat(absolute);
+    } catch {
+      link = null;
     }
-    const parent = await this.resolveInside(dirname(absolute));
-    return resolve(parent, basename(absolute));
+    if (link !== null && link.isSymbolicLink()) {
+      throw outside(path, "write target is a symlink");
+    }
+
+    // Walk up to the nearest existing ancestor and confine it to the roots.
+    let ancestor = dirname(absolute);
+    const trailing: string[] = [basename(absolute)];
+    // Stop at the filesystem root; a non-existent chain up to `/` is outside.
+    for (;;) {
+      if (existsSync(ancestor)) break;
+      const parent = dirname(ancestor);
+      if (parent === ancestor) throw outside(path, "no existing ancestor directory");
+      trailing.unshift(basename(ancestor));
+      ancestor = parent;
+    }
+    const realAncestor = await this.resolveInside(ancestor);
+    return resolve(realAncestor, ...trailing);
   }
 
   /**
