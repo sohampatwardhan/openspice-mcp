@@ -149,7 +149,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/compat.ts`: build the per-run `.spiceinit`/control block (`set ngbehavior=lt`; add `ltps`/`ltpsa` when PSpice-style libraries appear), never touching the user's global config; detect LTspice-only constructs from the parsed netlist, translate the safe ones (recording each translation), and raise `UNSUPPORTED_LTSPICE_FEATURE` naming the construct and 1-based line otherwise, per the design's compatibility table; require open user-supplied models for encrypted/vendor libs; resolve LTspice `standard.*` libs from the user's install when present and allowed
   - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5_
 
-- [ ] 10. Implement .step emulation and stepped-raw assembly
+- [x] 10. Implement .step emulation and stepped-raw assembly
   - `src/steps.ts`: expand `.step`/`.param` into an ngspice control loop (`alter`/`let`/`foreach`), collect per-step results, and assemble a single stepped `.raw`/result the reader keys by step index
   - _Requirements: 6.3, 7.3_
 
