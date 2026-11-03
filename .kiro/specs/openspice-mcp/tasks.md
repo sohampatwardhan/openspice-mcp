@@ -171,7 +171,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/edits.ts`: `addMeas(text, spec)`, `addStep(text, param, values)`, `parameterize(text, device, name)` over netlist text, each returning edited text or an absent-target diagnostic, never simulating
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [ ] 15. Implement the open-designs session store
+- [x] 15. Implement the open-designs session store
   - `src/designs.ts`: `open`, `list`, `active`, `getContent`, `setContent` (validate -> optional snapshot -> write in LTspice-openable bytes; parse error -> no write), `restore`, `listChanged(cursor)`; associate each design with its latest `.raw`/`.log`
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 10.1_
 
