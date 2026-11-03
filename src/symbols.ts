@@ -24,6 +24,7 @@ function makeSymbol(prefix: string, pins: { name: string; x: number; y: number }
     attributes: { Prefix: prefix },
     raw: [],
     diagnostics: [],
+    encoding: "utf-8",
   };
 }
 

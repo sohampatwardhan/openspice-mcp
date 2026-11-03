@@ -100,6 +100,7 @@ export interface Symbol {
   attributes: Record<string, string>;
   raw: RawEntry[];
   diagnostics: Diagnostic[];
+  encoding: Encoding;
 }
 
 /** Decode `.asc`/`.asy` bytes, sniffing the encoding and normalising to LF (Requirement 3.3). */
@@ -268,7 +269,7 @@ function parseText(trimmed: string, x: number, y: number): SheetDirective {
 
 /** Read an `.asy` symbol file (Requirement 3.2): pins in SPICE order, primitives, attributes. */
 export function readAsy(bytes: Buffer): Symbol {
-  const { text } = decodeText(bytes);
+  const { text, encoding } = decodeText(bytes);
   const sym: Symbol = {
     symbolType: null,
     pins: [],
@@ -276,6 +277,7 @@ export function readAsy(bytes: Buffer): Symbol {
     attributes: {},
     raw: [],
     diagnostics: [],
+    encoding,
   };
 
   interface PartialPin {

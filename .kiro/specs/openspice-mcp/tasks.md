@@ -153,7 +153,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/steps.ts`: expand `.step`/`.param` into an ngspice control loop (`alter`/`let`/`foreach`), collect per-step results, and assemble a single stepped `.raw`/result the reader keys by step index
   - _Requirements: 6.3, 7.3_
 
-- [ ] 11. Add the status, parse-netlist, and read-schematic tools
+- [x] 11. Add the status, parse-netlist, and read-schematic tools
   - `src/tools/status.ts` (`openspice_status`: ngspice path/version/compat-mode support with warnings, roots, plotting flag, optional-extras availability), `src/tools/netlist.ts` (`openspice_parse_netlist`), `src/tools/schematic.ts` (`openspice_read_schematic`); strict schemas, `outputSchema`, `structuredContent`; wire `Core`, `index.ts`, `server.ts`, shutdown
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.5, 3.1, 3.2_
 
