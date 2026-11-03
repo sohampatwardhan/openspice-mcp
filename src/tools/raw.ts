@@ -65,12 +65,12 @@ function registerReadRaw(server: McpServer, core: Core): void {
           z.object({
             name: z.string(),
             kind: z.string(),
-            min: z.number(),
-            max: z.number(),
-            final: z.number(),
+            min: z.number().nullable(),
+            max: z.number().nullable(),
+            final: z.number().nullable(),
             mean: z.number().nullable(),
             peak_to_peak: z.number().nullable(),
-            samples: z.array(z.number()),
+            samples: z.array(z.number().nullable()),
             complex_samples: z
               .array(z.object({ re: z.number(), im: z.number(), magnitude: z.number(), phase: z.number() }))
               .optional(),
