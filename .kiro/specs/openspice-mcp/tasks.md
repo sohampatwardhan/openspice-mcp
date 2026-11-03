@@ -163,7 +163,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/plot.ts`: `renderPlot(...)` writing an SVG only when plotting is enabled; a plotting-disabled request returns a diagnostic plus the numeric summary
   - _Requirements: 4.4, 5.5, 5.6, 6.1, 6.2, 7.1, 7.2, 7.4, 7.5, 7.7, 8.3, 10.1, 10.4, 11.2, 11.3, 15.3_
 
-- [ ] 13. Implement the reference indexer
+- [x] 13. Implement the reference indexer
   - `src/refdoc.ts`: `list()`/`get(id)` over OpenSPICE's own bundled docs, ngspice-manual pointers, and the user's local `LTspiceHelp` folder only when present and inside an allowed location; read LTspice help only from the user's files; ship no ADI content
   - _Requirements: 13.1, 13.2, 13.3, 13.4_
 
