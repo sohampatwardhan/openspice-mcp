@@ -1,0 +1,5 @@
+{
+  "analysis": "op",
+  "nodes": { "v(out)": 0.6666666666666666 },
+  "tolerances": { "v(out)": 0.005 }
+}
