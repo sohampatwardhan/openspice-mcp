@@ -3,6 +3,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Config } from "./config.js";
 import { stopAll } from "./children.js";
 import { createCore, type Core } from "./core.js";
+import { registerNetlistTool } from "./tools/netlist.js";
+import { registerSchematicTools } from "./tools/schematic.js";
+import { registerStatusTool } from "./tools/status.js";
 
 export const SERVER_NAME = "openspice-mcp";
 export const SERVER_VERSION = "0.1.0";
@@ -32,6 +35,9 @@ export function createServer(config: Config): OpenSpiceServer {
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION }, { instructions: SERVER_INSTRUCTIONS });
   const core = createCore(config, SERVER_VERSION);
   // Tool groups are registered here as they land (tasks 11, 12, 16).
+  registerStatusTool(server, core);
+  registerNetlistTool(server, core);
+  registerSchematicTools(server, core);
   const shutdown = async () => {
     await stopAll();
   };

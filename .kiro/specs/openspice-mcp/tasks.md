@@ -118,20 +118,20 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Implement `src/config.ts` (env vars `OPENSPICE_ROOTS`, `OPENSPICE_NGSPICE_BIN`, `OPENSPICE_ALLOW_PLOTS`, `OPENSPICE_LTSPICE_HELP_DIR`, `OPENSPICE_SYMBOL_PATH`, plus the off-by-default `OPENSPICE_ENABLE_LTSPICE`, `OPENSPICE_LTSPICE_BIN`, `OPENSPICE_ENABLE_BRIDGE`, `OPENSPICE_BRIDGE_BIN`, `OPENSPICE_WINE_BIN`, timeouts, `LIMITS`), `src/errors.ts` (`ErrorCode` union incl. `UNSUPPORTED_LTSPICE_FEATURE`, `GENERATE_UNVERIFIED`, `BRIDGE_UNAVAILABLE`, `DESIGN_NOT_FOUND`), `src/paths.ts` (`Roots`: `realpath`, `resolveInside`, `ensureWritable`, `makeRunDir`, `snapshotDir`)
   - _Requirements: 8.1, 8.3, 8.4_
 
-- [ ] 3. Implement the netlist parser and validator
+- [x] 3. Implement the netlist parser and validator
   - `src/netlist.ts`: `parse(text)`, `validate(netlist)`, `emit(netlist)` with per-line diagnostics; resolve `.include`/`.lib` relative to the source dir and confine to roots at the tool layer
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 4. Implement the .asc/.asy reader and symbol resolution
+- [x] 4. Implement the .asc/.asy reader and symbol resolution
   - `src/asc.ts`: `readAsc`/`readAsy` with UTF-16/UTF-8(+BOM)/CRLF decoding and detected-encoding reporting; model components, wires, flags, directives; retain unknown keywords as raw entries with a diagnostic
   - Ship a minimal open symbol set and resolve symbols from it, a configured `OPENSPICE_SYMBOL_PATH`, or the user's LTspice `sym` folder only when installed and inside an allowed location
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.2_
 
-- [ ] 5. Implement the schematic-to-netlist converter
+- [x] 5. Implement the schematic-to-netlist converter
   - In `src/asc.ts`: `toNetlist(schematic, symbols)` deriving nets from wire endpoints and labels, ordering nodes by symbol pin order, warnings for shorts/unconnected pins; reuse `netlist.emit`
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 6. Implement the .raw reader
+- [x] 6. Implement the .raw reader
   - `src/raw.ts`: `readRaw(bytes)` sniffing ngspice Berkeley binary/ASCII and LTspice binary (detect precision and `Flags:` from the header, not assumed); variables, point count, real/complex, step structure; `summarize(raw, vars, maxPoints)`; complex magnitude/phase; `parseMeas(log)`; `rawInfo(raw)` metadata-only; `exportWaveforms(raw, vars, path)` to CSV/ASCII; `RAW_PARSE_FAILED` on truncation/unknown header
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 10.2, 10.3_
 
@@ -153,7 +153,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/steps.ts`: expand `.step`/`.param` into an ngspice control loop (`alter`/`let`/`foreach`), collect per-step results, and assemble a single stepped `.raw`/result the reader keys by step index
   - _Requirements: 6.3, 7.3_
 
-- [ ] 11. Add the status, parse-netlist, and read-schematic tools
+- [x] 11. Add the status, parse-netlist, and read-schematic tools
   - `src/tools/status.ts` (`openspice_status`: ngspice path/version/compat-mode support with warnings, roots, plotting flag, optional-extras availability), `src/tools/netlist.ts` (`openspice_parse_netlist`), `src/tools/schematic.ts` (`openspice_read_schematic`); strict schemas, `outputSchema`, `structuredContent`; wire `Core`, `index.ts`, `server.ts`, shutdown
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.5, 3.1, 3.2_
 

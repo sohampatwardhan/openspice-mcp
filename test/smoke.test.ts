@@ -21,13 +21,18 @@ describe("server surface", () => {
     }
   });
 
-  it("advertises no tools capability yet", async () => {
-    // The MCP SDK registers the tools/list handler and the tools capability only
-    // once a tool is registered. Tool groups land in tasks 11, 12, and 16; until
-    // then the scaffold has no tools and does not advertise the capability.
+  it("advertises the tools capability and the task-11 tool set", async () => {
     const c = await connect();
     try {
-      assert.equal(c.client.getServerCapabilities()?.tools, undefined);
+      assert.ok(c.client.getServerCapabilities()?.tools);
+      const list = await c.client.listTools();
+      const names = list.tools.map((t) => t.name).sort();
+      assert.deepEqual(names, ["openspice_parse_netlist", "openspice_read_schematic", "openspice_status"]);
+      // Every tool has a strict input schema and an output schema.
+      for (const tool of list.tools) {
+        assert.equal((tool.inputSchema as { additionalProperties?: unknown }).additionalProperties, false);
+        assert.ok(tool.outputSchema, `${tool.name} has an outputSchema`);
+      }
     } finally {
       await c.close();
     }
