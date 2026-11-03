@@ -140,7 +140,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Round-trip verifier: netlist the generated `.asc`, compare device set and net connectivity with the intended connectivity, return `verified` + counts or `GENERATE_UNVERIFIED` + diffs (error in strict mode)
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 11.1, 11.2, 11.3, 18.1_
 
-- [ ] 8. Implement the ngspice runner, fixed argv, and child tracking
+- [x] 8. Implement the ngspice runner, fixed argv, and child tracking
   - `src/ngspice.ts` (probe ngspice: path, version, whether it supports `ngbehavior=lt`, recording the stated minimum and marking it uncertain), `src/argv.ts` (ngspice `-b -r <raw> -o <log>`; no shell, no free-form flags), `src/children.ts` (detached, tracked, `stopAll`), `src/runner.ts` (prepare run dir, write the per-run `.spiceinit`/control block via the compat layer, spawn, enforce timeout, classify exit into success/`SIM_FAILED`/`SIM_TIMEOUT`, clean up and stop processes)
   - Add `test/fixtures/fake-ngspice.mjs` selected via `OPENSPICE_NGSPICE_BIN` so tests never need a real engine
   - _Requirements: 6.1, 6.4, 6.5, 6.6, 6.7, 8.2, 8.5, 8.6_
