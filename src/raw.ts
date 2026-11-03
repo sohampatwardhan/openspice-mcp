@@ -420,10 +420,17 @@ export interface Measurement {
 export function parseMeas(log: string): Measurement[] {
   const out: Measurement[] = [];
   const seen = new Set<string>();
-  const re = /^\s*([A-Za-z_][\w()]*)\s*=\s*([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)/;
+  // `name = <number>` possibly followed by more fields (e.g. ngspice's `at=` column).
+  const re = /^\s*([A-Za-z_][\w()]*)\s*=\s*([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)\s*(\S*)/;
+  // ngspice's batch-mode log prints memory/size statistics in the same
+  // `Name = <number> <unit>` shape (e.g. `Stack = 0 bytes.`, `... = 12.555 MB.`).
+  // A measurement value is never immediately followed by a size unit, so reject those.
+  const sizeUnit = /^(?:bytes?|pages?|[kKmMgG]?i?[bB])\b/;
   for (const line of log.split(/\r\n|\r|\n/)) {
     const m = re.exec(line);
     if (!m) continue;
+    const trailing = m[3] ?? "";
+    if (trailing !== "" && sizeUnit.test(trailing)) continue;
     const name = (m[1] ?? "").toLowerCase();
     const value = Number(m[2]);
     if (!Number.isFinite(value) || seen.has(name)) continue;

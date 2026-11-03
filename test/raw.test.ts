@@ -143,6 +143,30 @@ describe("parseMeas", () => {
     assert.ok(Math.abs((byName.vmax ?? 0) - 1.23456) < 1e-6);
     assert.ok(Math.abs((byName.trise ?? 0) - 2.5e-9) < 1e-18);
   });
+
+  it("parses the real ngspice meas format with a trailing at= field", () => {
+    const log = ["vmax                =  7.564548e-01 at=  3.631465e-04", "vmin                =  -7.074454e-01 at=  1.875147e-03"].join("\n");
+    const meas = parseMeas(log);
+    const byName = Object.fromEntries(meas.map((m) => [m.name, m.value]));
+    assert.ok(Math.abs((byName.vmax ?? 0) - 0.7564548) < 1e-6);
+    assert.ok(Math.abs((byName.vmin ?? 0) + 0.7074454) < 1e-6);
+  });
+
+  it("ignores ngspice memory/statistics lines that look like name = number", () => {
+    // These appear in every batch-mode ngspice log and must not be reported as measurements.
+    const log = [
+      "Stack = 0 bytes.",
+      "Shared ngspice pages = 10.660 MB.",
+      "Library pages = 1.988 MB.",
+      "Maximum ngspice program size =   21.668 MB.",
+      "Current ngspice program size =   12.555 MB.",
+      "No. of Data Rows : 41",
+      "vmax = 1.0e+00",
+    ].join("\n");
+    const meas = parseMeas(log);
+    const names = meas.map((m) => m.name);
+    assert.deepEqual(names, ["vmax"], `expected only vmax, got ${JSON.stringify(names)}`);
+  });
 });
 
 describe("readRaw failures", () => {
