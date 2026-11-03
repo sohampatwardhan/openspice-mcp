@@ -1,5 +1,5 @@
 // Suite-wide checks over stdio: the server starts, reports its identity, and
-// exposes no tools yet (tool groups land in tasks 11, 12, 16).
+// exposes the task-11 and task-12 tool set with strict schemas.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, realpathSync, rmSync } from "node:fs";
@@ -21,13 +21,24 @@ describe("server surface", () => {
     }
   });
 
-  it("advertises the tools capability and the task-11 tool set", async () => {
+  it("advertises the tools capability and the task-12 tool set", async () => {
     const c = await connect();
     try {
       assert.ok(c.client.getServerCapabilities()?.tools);
       const list = await c.client.listTools();
       const names = list.tools.map((t) => t.name).sort();
-      assert.deepEqual(names, ["openspice_parse_netlist", "openspice_read_schematic", "openspice_status"]);
+      assert.deepEqual(names, [
+        "openspice_export_waveforms",
+        "openspice_generate_schematic",
+        "openspice_get_log",
+        "openspice_parse_netlist",
+        "openspice_raw_info",
+        "openspice_read_raw",
+        "openspice_read_schematic",
+        "openspice_schematic_to_netlist",
+        "openspice_simulate",
+        "openspice_status",
+      ]);
       // Every tool has a strict input schema and an output schema.
       for (const tool of list.tools) {
         assert.equal((tool.inputSchema as { additionalProperties?: unknown }).additionalProperties, false);

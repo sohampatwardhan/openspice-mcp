@@ -157,7 +157,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/tools/status.ts` (`openspice_status`: ngspice path/version/compat-mode support with warnings, roots, plotting flag, optional-extras availability), `src/tools/netlist.ts` (`openspice_parse_netlist`), `src/tools/schematic.ts` (`openspice_read_schematic`); strict schemas, `outputSchema`, `structuredContent`; wire `Core`, `index.ts`, `server.ts`, shutdown
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.5, 3.1, 3.2_
 
-- [ ] 12. Add the convert/generate, simulate, and raw/log/export tools
+- [x] 12. Add the convert/generate, simulate, and raw/log/export tools
   - Extend `src/tools/schematic.ts` with `openspice_schematic_to_netlist` (text or write-to-roots, overwrite guard) and `openspice_generate_schematic` (write `.asc` + optional netlist, overwrite guard, `GENERATE_INVALID` passthrough, round-trip `verified`/`GENERATE_UNVERIFIED`)
   - `src/tools/simulate.ts` (`openspice_simulate`: netlist path/inline/`.asc`, convert `.asc` first, run ngspice through the compat layer and step emulator, return status/paths/diagnostics/translations; `UNSUPPORTED_LTSPICE_FEATURE` passthrough), `src/tools/raw.ts` (`openspice_read_raw`, `openspice_raw_info`, `openspice_export_waveforms`, `openspice_get_log`)
   - `src/plot.ts`: `renderPlot(...)` writing an SVG only when plotting is enabled; a plotting-disabled request returns a diagnostic plus the numeric summary

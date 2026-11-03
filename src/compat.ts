@@ -76,6 +76,23 @@ export function spiceinitContents(libKinds: string[]): string {
   ].join("\n");
 }
 
+/**
+ * Translate an LTspice `.meas` argument string to the ngspice `meas` form
+ * (design compat table: ".meas -> ngspice meas; warn on unsupported clauses").
+ * The one difference that otherwise fails outright is the `AT` clause: LTspice
+ * writes `FIND x AT 2m` while ngspice's parser wants `AT=2m` (verified against
+ * ngspice 44.2, which rejects the bare form with "bad syntax of WHEN"). This
+ * rewrites a bare `AT <value>` to `AT=<value>` and leaves everything else as
+ * written. Returns the (possibly) rewritten args and whether it changed.
+ */
+export function translateMeasArgs(args: string): { args: string; changed: boolean } {
+  // Match `AT` as a standalone clause keyword followed by whitespace and a value
+  // token, not already an `AT=...`. Case-insensitive; the value is a single
+  // SPICE token (number with optional SI suffix, or an expression without space).
+  const rewritten = args.replace(/\bAT\s+(?!=)(\S+)/gi, (_m, value: string) => `AT=${value}`);
+  return { args: rewritten, changed: rewritten !== args };
+}
+
 function unsupported(construct: string, line: number | null, detail: string): never {
   throw new ToolError(
     "UNSUPPORTED_LTSPICE_FEATURE",

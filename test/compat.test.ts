@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { prepareCompat, spiceinitContents, COMPAT_UNSUPPORTED } from "../src/compat.js";
+import { prepareCompat, spiceinitContents, translateMeasArgs, COMPAT_UNSUPPORTED } from "../src/compat.js";
 import { ToolError } from "../src/errors.js";
 import { parse } from "../src/netlist.js";
 
@@ -62,6 +62,27 @@ describe("prepareCompat", () => {
 
   it("exposes the unsupported-construct table", () => {
     assert.ok(COMPAT_UNSUPPORTED.length > 0);
+  });
+});
+
+describe("translateMeasArgs", () => {
+  it("rewrites an LTspice bare AT <value> to ngspice AT=<value>", () => {
+    const { args, changed } = translateMeasArgs("tran vfinal FIND v(out) AT 2m");
+    assert.match(args, /AT=2m/);
+    assert.doesNotMatch(args, /AT 2m/);
+    assert.equal(changed, true);
+  });
+
+  it("leaves an already-ngspice AT=<value> untouched", () => {
+    const { args, changed } = translateMeasArgs("tran vfinal FIND v(out) AT=2m");
+    assert.match(args, /AT=2m/);
+    assert.equal(changed, false);
+  });
+
+  it("does not disturb a MAX/WHEN measurement", () => {
+    const { args, changed } = translateMeasArgs("tran vmax MAX v(out)");
+    assert.equal(args, "tran vmax MAX v(out)");
+    assert.equal(changed, false);
   });
 });
 

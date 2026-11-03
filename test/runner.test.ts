@@ -9,7 +9,7 @@ import { liveChildren } from "../src/children.js";
 import { ToolError } from "../src/errors.js";
 import { parse } from "../src/netlist.js";
 import { Roots } from "../src/paths.js";
-import { analysisFromNetlist, buildRunDeck, runSimulation } from "../src/runner.js";
+import { analysisFromNetlist, bindSweeps as bindSweepsForTest, buildRunDeck, runSimulation } from "../src/runner.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fakeBin = join(here, "..", "..", "test", "fixtures", "fake-ngspice.mjs");
@@ -59,6 +59,23 @@ describe("buildRunDeck", () => {
     assert.match(deck, /set appendwrite/);
     // The native .step directive is removed.
     assert.doesNotMatch(deck, /^\.step/m);
+  });
+});
+
+describe("bindSweeps auto device detection", () => {
+  it("emits an alter (not alterparam) when the swept name is a device instance", () => {
+    // `.step R1 1k 3k 1k` sweeps the device R1 directly; the runner should bind
+    // it as a device sweep without the caller supplying a stepDevice map.
+    const n = parse("div\nV1 in 0 1\nR1 in out 1k\nR2 out 0 1k\n.step R1 1k 3k 1k\n.op\n.end\n");
+    const deck = buildRunDeck(n, { rawName: "out.raw", sweeps: bindSweepsForTest(n, undefined) });
+    assert.match(deck, /alter R1/);
+    assert.doesNotMatch(deck, /alterparam/);
+  });
+
+  it("falls back to alterparam for a genuine .param sweep", () => {
+    const n = parse("div\nV1 in 0 1\nR1 in out {rl}\nR2 out 0 1k\n.param rl=1k\n.step param rl list 1k 2k\n.op\n.end\n");
+    const deck = buildRunDeck(n, { rawName: "out.raw", sweeps: bindSweepsForTest(n, undefined) });
+    assert.match(deck, /alterparam rl/);
   });
 });
 
