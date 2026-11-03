@@ -238,11 +238,21 @@ function parseNgspiceBinary(bytes: Buffer, header: Header, real: number[][], cpl
   }
 }
 
-/** LTspice real transient: float64 time axis (variable 0), float32 for the rest. */
+/**
+ * LTspice real transient: float64 time axis (variable 0), float32 for the rest.
+ * A `double` run (Flags: ... double) stores every trace as float64 instead; the
+ * reader honors that flag rather than assuming the mixed-width layout
+ * (Requirement 7.1: detect precision from the header).
+ */
 function parseLtspiceBinary(bytes: Buffer, header: Header, real: number[][], cplx: ComplexSample[][]): void {
   const { numVars, numPoints, complex, dataOffset } = header;
   if (complex) {
     // Complex LTspice runs store float64 pairs; reuse the ngspice complex path.
+    parseNgspiceBinary(bytes, header, real, cplx);
+    return;
+  }
+  if (header.flags.includes("double")) {
+    // All traces (axis included) are float64; this matches the ngspice real path.
     parseNgspiceBinary(bytes, header, real, cplx);
     return;
   }
