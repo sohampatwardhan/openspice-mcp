@@ -131,7 +131,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - In `src/asc.ts`: `toNetlist(schematic, symbols)` deriving nets from wire endpoints and labels, ordering nodes by symbol pin order, warnings for shorts/unconnected pins; reuse `netlist.emit`
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 6. Implement the .raw reader
+- [x] 6. Implement the .raw reader
   - `src/raw.ts`: `readRaw(bytes)` sniffing ngspice Berkeley binary/ASCII and LTspice binary (detect precision and `Flags:` from the header, not assumed); variables, point count, real/complex, step structure; `summarize(raw, vars, maxPoints)`; complex magnitude/phase; `parseMeas(log)`; `rawInfo(raw)` metadata-only; `exportWaveforms(raw, vars, path)` to CSV/ASCII; `RAW_PARSE_FAILED` on truncation/unknown header
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 10.2, 10.3_
 
