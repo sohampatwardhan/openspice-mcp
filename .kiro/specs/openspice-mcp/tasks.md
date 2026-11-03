@@ -145,7 +145,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Add `test/fixtures/fake-ngspice.mjs` selected via `OPENSPICE_NGSPICE_BIN` so tests never need a real engine
   - _Requirements: 6.1, 6.4, 6.5, 6.6, 6.7, 8.2, 8.5, 8.6_
 
-- [ ] 9. Implement the LTspice compatibility layer
+- [x] 9. Implement the LTspice compatibility layer
   - `src/compat.ts`: build the per-run `.spiceinit`/control block (`set ngbehavior=lt`; add `ltps`/`ltpsa` when PSpice-style libraries appear), never touching the user's global config; detect LTspice-only constructs from the parsed netlist, translate the safe ones (recording each translation), and raise `UNSUPPORTED_LTSPICE_FEATURE` naming the construct and 1-based line otherwise, per the design's compatibility table; require open user-supplied models for encrypted/vendor libs; resolve LTspice `standard.*` libs from the user's install when present and allowed
   - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5_
 

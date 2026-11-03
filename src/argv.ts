@@ -35,3 +35,26 @@ export function batchRunArgv(spec: BatchRunSpec): string[] {
   }
   return ["-b", "-r", spec.rawOut, "-o", spec.logOut, spec.deck];
 }
+
+export interface ControlRunSpec {
+  /** The prepared deck file to simulate; it drives output through its own `.control` block. */
+  deck: string;
+  /** Where ngspice writes the log. */
+  logOut: string;
+}
+
+/**
+ * `ngspice -b -o <log> <deck>`: a non-interactive run with no `-r` rawfile. The
+ * deck carries a `.control` block that runs the analysis and `write`s the raw
+ * itself. This is the path the runner uses, because ngspice refuses `.meas` in
+ * `-b` mode when `-r` is set (verified against ngspice 44.2; see
+ * docs/compatibility.md), while a control-block run supports both the raw and
+ * `.meas` output.
+ */
+export function controlRunArgv(spec: ControlRunSpec): string[] {
+  for (const [name, value] of Object.entries(spec)) {
+    if (typeof value !== "string" || value === "") throw new ArgvError(`controlRunArgv: ${name} must be a non-empty path`);
+    if (value.startsWith("-")) throw new ArgvError(`controlRunArgv: ${name} must not start with '-' (got ${JSON.stringify(value)})`);
+  }
+  return ["-b", "-o", spec.logOut, spec.deck];
+}
