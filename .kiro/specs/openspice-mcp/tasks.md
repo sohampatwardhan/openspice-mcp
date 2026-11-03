@@ -140,16 +140,16 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Round-trip verifier: netlist the generated `.asc`, compare device set and net connectivity with the intended connectivity, return `verified` + counts or `GENERATE_UNVERIFIED` + diffs (error in strict mode)
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 11.1, 11.2, 11.3, 18.1_
 
-- [ ] 8. Implement the ngspice runner, fixed argv, and child tracking
+- [x] 8. Implement the ngspice runner, fixed argv, and child tracking
   - `src/ngspice.ts` (probe ngspice: path, version, whether it supports `ngbehavior=lt`, recording the stated minimum and marking it uncertain), `src/argv.ts` (ngspice `-b -r <raw> -o <log>`; no shell, no free-form flags), `src/children.ts` (detached, tracked, `stopAll`), `src/runner.ts` (prepare run dir, write the per-run `.spiceinit`/control block via the compat layer, spawn, enforce timeout, classify exit into success/`SIM_FAILED`/`SIM_TIMEOUT`, clean up and stop processes)
   - Add `test/fixtures/fake-ngspice.mjs` selected via `OPENSPICE_NGSPICE_BIN` so tests never need a real engine
   - _Requirements: 6.1, 6.4, 6.5, 6.6, 6.7, 8.2, 8.5, 8.6_
 
-- [ ] 9. Implement the LTspice compatibility layer
+- [x] 9. Implement the LTspice compatibility layer
   - `src/compat.ts`: build the per-run `.spiceinit`/control block (`set ngbehavior=lt`; add `ltps`/`ltpsa` when PSpice-style libraries appear), never touching the user's global config; detect LTspice-only constructs from the parsed netlist, translate the safe ones (recording each translation), and raise `UNSUPPORTED_LTSPICE_FEATURE` naming the construct and 1-based line otherwise, per the design's compatibility table; require open user-supplied models for encrypted/vendor libs; resolve LTspice `standard.*` libs from the user's install when present and allowed
   - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5_
 
-- [ ] 10. Implement .step emulation and stepped-raw assembly
+- [x] 10. Implement .step emulation and stepped-raw assembly
   - `src/steps.ts`: expand `.step`/`.param` into an ngspice control loop (`alter`/`let`/`foreach`), collect per-step results, and assemble a single stepped `.raw`/result the reader keys by step index
   - _Requirements: 6.3, 7.3_
 
@@ -179,7 +179,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/tools/designs.ts` (`openspice_designs`: open/list/active/get_content/set_content/snapshot/restore/list_changed; `DESIGN_NOT_FOUND`), `openspice_netlist_edit` (`.meas`/`.step`/parameterize), `src/tools/reference.ts` (`openspice_reference`: list/get)
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 12.1, 12.2, 12.3, 12.4, 13.1, 13.2, 13.3_
 
-- [ ] 17. Implement the LTspice-compatible .raw writer
+- [x] 17. Implement the LTspice-compatible .raw writer
   - `src/rawwrite.ts`: convert an ngspice result into an LTspice binary `.raw` (UTF-16LE header, `Flags:` real/complex/double/stepped/forward, variable list, trace widths per the design's fidelity notes with each uncertain detail tagged) while keeping ngspice's original beside it; verify fidelity by re-reading the written file with `raw.readRaw` and comparing variables/points/values within tolerance; on failure return the ngspice-native artifact plus a diagnostic
   - _Requirements: 18.2, 18.3, 18.4_
 

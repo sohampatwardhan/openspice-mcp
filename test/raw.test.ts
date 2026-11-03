@@ -108,6 +108,35 @@ describe("readRaw LTspice-style binary", () => {
     const vout = raw.values("V(out)");
     assert.ok(Math.abs((vout[2] ?? 0) - 0.5) < 1e-6);
   });
+
+  it("reads an all-float64 payload when the Flags carry 'double'", () => {
+    // An LTspice 'double' real run stores every trace (axis included) as float64,
+    // not the mixed float64-axis/float32-trace layout of a plain real run. The
+    // reader must honor the Flags: double token rather than assuming float32
+    // traces (Requirement 7.1: detect precision from the header).
+    const lines = [
+      "Title: dbl",
+      "Date: x",
+      "Plotname: Transient Analysis",
+      "Flags: real forward double",
+      "No. Variables: 2",
+      "No. Points: 2",
+      "Variables:",
+      "\t0\ttime\ttime",
+      "\t1\tV(out)\tvoltage",
+      "Binary:",
+    ];
+    const header = Buffer.from("\ufeff" + lines.join("\r\n") + "\r\n", "utf16le");
+    const payload = Buffer.alloc(2 * 2 * 8);
+    payload.writeDoubleLE(0, 0);
+    payload.writeDoubleLE(0.5, 8);
+    payload.writeDoubleLE(1e-9, 16);
+    payload.writeDoubleLE(0.75, 24);
+    const raw = readRaw(Buffer.concat([header, payload]));
+    assert.equal(raw.format, "ltspice-binary");
+    assert.deepEqual(raw.values("time"), [0, 1e-9]);
+    assert.deepEqual(raw.values("V(out)"), [0.5, 0.75]);
+  });
 });
 
 describe("rawInfo", () => {

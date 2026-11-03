@@ -8,7 +8,8 @@
 //   FAKE_NGSPICE_VERSION   version string to report (default 44.2)
 //   FAKE_NGSPICE_EXIT      exit code for a batch run (default 0)
 //   FAKE_NGSPICE_HANG      if "1", sleep forever on a batch run (timeout tests)
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 const argv = process.argv.slice(2);
 const version = process.env.FAKE_NGSPICE_VERSION ?? "44.2";
@@ -29,11 +30,23 @@ if (argv.includes("--version")) {
 if (process.env.FAKE_NGSPICE_HANG === "1") {
   setInterval(() => {}, 1 << 30);
 } else {
-  // Parse the batch form: -b -r <raw> -o <log> <deck>
+  // Parse both batch forms:
+  //   -b -r <raw> -o <log> <deck>           (plain rawfile via -r)
+  //   -b -o <log> <deck>                     (control-block run; raw via `write`)
   const rawIdx = argv.indexOf("-r");
   const logIdx = argv.indexOf("-o");
-  const rawPath = rawIdx >= 0 ? argv[rawIdx + 1] : null;
   const logPath = logIdx >= 0 ? argv[logIdx + 1] : null;
+  // The deck is the last non-flag argument.
+  const deckPath = argv[argv.length - 1] ?? null;
+
+  // For the control-block form, read the deck's `write <name>` target and
+  // resolve it against the deck's directory (ngspice's cwd for the run).
+  let rawPath = rawIdx >= 0 ? argv[rawIdx + 1] : null;
+  if (rawPath === null && deckPath && existsSync(deckPath)) {
+    const deck = readFileSync(deckPath, "utf8");
+    const m = /^\s*write\s+(\S+)/m.exec(deck);
+    if (m) rawPath = join(dirname(deckPath), m[1]);
+  }
 
   if (logPath) writeFileSync(logPath, "fake-ngspice batch run\nNo. of Data Rows : 2\n");
   if (rawPath) {
