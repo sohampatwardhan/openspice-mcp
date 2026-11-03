@@ -127,7 +127,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - Ship a minimal open symbol set and resolve symbols from it, a configured `OPENSPICE_SYMBOL_PATH`, or the user's LTspice `sym` folder only when installed and inside an allowed location
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.2_
 
-- [ ] 5. Implement the schematic-to-netlist converter
+- [x] 5. Implement the schematic-to-netlist converter
   - In `src/asc.ts`: `toNetlist(schematic, symbols)` deriving nets from wire endpoints and labels, ordering nodes by symbol pin order, warnings for shorts/unconnected pins; reuse `netlist.emit`
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
