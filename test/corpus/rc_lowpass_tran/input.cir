@@ -1,0 +1,7 @@
+* RC low-pass transient with an LTspice-style .meas AT clause
+V1 in 0 1
+R1 in out 1k
+C1 out 0 1u
+.tran 1u 5m
+.meas tran vfinal find v(out) AT 5m
+.end

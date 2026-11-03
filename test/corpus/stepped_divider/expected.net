@@ -1,0 +1,7 @@
+* Resistor divider with a .step device sweep (LTspice workflow)
+V1 in 0 1
+R1 in out 1k
+R2 out 0 1k
+.op
+.step R1 500 1500 500
+.end

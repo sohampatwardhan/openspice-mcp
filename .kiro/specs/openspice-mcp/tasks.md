@@ -191,11 +191,11 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/bridge.ts`: detect `ltspice-mcp-bridge.exe` on Windows x64 (report via status); when `OPENSPICE_ENABLE_BRIDGE` is on, run it as an MCP client subprocess, forwarding supported ops `--headless` by default and `--pid`/`--port` (loopback) only on explicit live-GUI request; map exit/failure to `BRIDGE_UNAVAILABLE` and fall back to the ngspice file-based path. Add a `delegate` flag to bridge-capable tools; keep file-based as the default. Cover with `test/fixtures/fake-bridge.mjs`
   - _Requirements: 1.4, 17.1, 17.2, 17.3, 17.4_
 
-- [ ] 20. Build the compatibility test corpus and wire it into CI
+- [x] 20. Build the compatibility test corpus and wire it into CI
   - Create `test/corpus/<case>/` fixtures (`input.cir`/`input.asc`, `expected.net`, optional `expected.meas.json` with tolerances, `notes.md`), a runner that parses, netlists, runs ngspice through the compat layer, and compares within tolerance, plus cases for each newly supported/translated or unsupported construct; run it in the task-1 CI `test` job. Leave room for the owner's undergrad LTspice circuits
   - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
-- [ ] 21. Author the bundled skill and its version check
+- [x] 21. Author the bundled skill and its version check
   - Add `skills/openspice/SKILL.md` (quoted SemVer `metadata.version`) teaching probing, open/edit designs, parse/validate, generate (round-trip), simulate with ngspice + compatibility, read results/log, export, LTspice-compatible raw, and reference lookup, noting the LTspice backend and bridge as optional Windows-x64 extras, plus `references/` for a tool cheat sheet, the parity map, the compatibility table, and failure recovery
   - Add `scripts/check-skill-versions.mjs` (sibling-style) and confirm the task-1 `skills` CI job installs it cleanly
   - _Requirements: 1.1_

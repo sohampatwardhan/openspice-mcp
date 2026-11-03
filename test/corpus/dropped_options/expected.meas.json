@@ -1,0 +1,6 @@
+{
+  "analysis": "tran",
+  "translation": ".options",
+  "nodes": { "v(out)": 1.0 },
+  "tolerances": { "v(out)": 0.01 }
+}

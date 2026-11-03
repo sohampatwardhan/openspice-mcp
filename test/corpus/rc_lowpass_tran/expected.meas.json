@@ -1,0 +1,6 @@
+{
+  "analysis": "tran",
+  "runTranslation": ".meas",
+  "measurements": { "vfinal": 1.0 },
+  "tolerances": { "vfinal": 0.01 }
+}
