@@ -108,18 +108,15 @@ ngspice-manual pointers, and the user's local `LTspiceHelp` folder when it is
 installed inside an allowed location. LTspice help content is read only from the
 user's files; OpenSPICE ships no Analog Devices documentation.
 
-## Optional Windows-x64 extras (never required)
+## Optional Windows-x64 extras (planned, not available here)
 
-Both are off by default and never the default path; ngspice file-based simulation
-always works without them.
-
-- Native LTspice backend: `openspice_simulate backend: "ltspice"` runs native
-  LTspice batch, but only when the backend is enabled (`OPENSPICE_ENABLE_LTSPICE`,
-  `OPENSPICE_LTSPICE_BIN`) and available on Windows x64.
-- LTspice MCP bridge: `openspice_simulate delegate: true` routes through ADI's
-  `ltspice-mcp-bridge.exe` when it is enabled and available, headless by default.
-  If the bridge is unavailable or fails (`BRIDGE_UNAVAILABLE`), the tool falls
-  back to the file-based ngspice path and notes it in `warnings`.
+Two optional Windows-x64 extras are planned but are **not built in this release**:
+a native LTspice simulation backend and a proxy to ADI's official
+`ltspice-mcp-bridge.exe`. Neither is required and ngspice file-based simulation is
+always the path. `openspice_simulate` exposes no `backend` or `delegate` flag yet;
+`openspice_status` reports both extras as unavailable on every host (and, off
+Windows x64, with a one-line reason). The `BACKEND_NOT_FOUND` and
+`BRIDGE_UNAVAILABLE` error codes are reserved for when these extras land.
 
 ## Recover
 

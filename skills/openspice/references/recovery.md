@@ -11,12 +11,12 @@ first.
 | `GENERATE_INVALID` | The circuit description is inconsistent | Fix the named element (unknown symbol, pin on no net, net with < 2 pins); no file was written |
 | `GENERATE_UNVERIFIED` | A generated `.asc` did not round-trip | Inspect the listed net/pin diffs; in `strict` mode no file is written, so correct the description and retry |
 | `UNSUPPORTED_LTSPICE_FEATURE` | An LTspice-only construct ngspice cannot run | The message names the construct and line; replace it with a supported equivalent (see compatibility.md) |
-| `BACKEND_NOT_FOUND` | ngspice is missing, or the selected backend is unavailable | Show the install hint from `openspice_status`; for `backend: "ltspice"` confirm the Windows-x64 extra is enabled |
+| `BACKEND_NOT_FOUND` | ngspice could not be started | Show the install hint from `openspice_status` and check `OPENSPICE_NGSPICE_BIN` points at a real ngspice |
 | `SIM_TIMEOUT` | The run exceeded the timeout | Read the log tail in `details`; simplify the deck or raise `timeout_ms` |
 | `SIM_FAILED` | ngspice exited nonzero or hit a convergence/syntax error | Read the parsed errors and log tail; fix the deck. No partial result is returned as success |
 | `RAW_PARSE_FAILED` | The `.raw` is truncated or its header is unknown | `details` reports where parsing stopped; re-run the simulation to regenerate it |
 | `DESIGN_NOT_FOUND` | An unknown design id | Re-open the design or `list` the open set to get a valid id |
-| `BRIDGE_UNAVAILABLE` | The LTspice MCP bridge is disabled/absent/failed | The file-based ngspice path is the fallback; drop `delegate` and run file-based |
+| `BRIDGE_UNAVAILABLE` | Reserved for the planned LTspice MCP bridge extra (not built in this release) | Use the file-based ngspice path (`openspice_simulate`); the bridge is not available yet |
 
 Non-fatal diagnostics (not errors): a plot requested while plotting is disabled
 still returns the numeric summary; an LTspice-compatible `.raw` that cannot be

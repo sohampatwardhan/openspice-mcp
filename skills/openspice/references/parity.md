@@ -26,6 +26,9 @@ only an optional alternative route for the same tools.
 | **Beyond official** — macOS, Linux, Windows ARM64 (ngspice everywhere) | all tools | — |
 | **Beyond official** — LTspice compatibility layer with clear unsupported errors | all run paths | — |
 
-The native LTspice backend (`backend: "ltspice"`) and the bridge
-(`delegate: true`) are Windows-x64-only extras, off by default, and never
-required. Off Windows x64 the status tool reports both unavailable with a reason.
+The native LTspice backend and the LTspice MCP bridge are planned Windows-x64-only
+extras that are **not built in this release**: the "Optional alternative" column
+above is forward-looking, and `openspice_simulate` exposes no `backend` or
+`delegate` flag yet. Until they land, every capability runs through the
+file-based ngspice tool, and `openspice_status` reports both extras as unavailable
+on every host (with a one-line reason off Windows x64).

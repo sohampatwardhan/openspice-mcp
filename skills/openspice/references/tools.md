@@ -14,7 +14,7 @@ configured roots.
 | `openspice_generate_schematic` | `circuit` description, `write?`, `out?`, `overwrite?`, `strict?` | `.asc` bytes/path, `verified` + counts, or `GENERATE_UNVERIFIED`/`GENERATE_INVALID` |
 | `openspice_designs` | `action` (open/list/active/get_content/set_content/snapshot/restore/list_changed) | design id/path/kind/active, content + encoding, change list |
 | `openspice_netlist_edit` | `text`, helper (`add_meas`/`add_step`/`parameterize`) + spec | edited text, or an absent-target diagnostic |
-| `openspice_simulate` | `path`/`text`, `kind?`, `variables?`, `max_points?`, `timeout_ms?`, `step_device?`, `backend?`, `delegate?` | status, `backend`, raw/log paths, summary, measurements, translations, warnings |
+| `openspice_simulate` | `path`/`text`, `kind?`, `variables?`, `max_points?`, `timeout_ms?`, `step_device?`, `design_id?` | status, source, raw/log paths, summary, measurements, translations, warnings |
 | `openspice_read_raw` | `path`, `variables?`, `max_points?`, plot/ltspice-raw options | summaries, samples, complex mag/phase, step keying |
 | `openspice_raw_info` | `path` | `.raw` metadata only (no sample arrays) |
 | `openspice_export_waveforms` | `path`, `variables`, `out`, `format?`, `overwrite?` | written CSV/ASCII path |
