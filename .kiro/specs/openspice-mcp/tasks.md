@@ -167,7 +167,7 @@ Critical path: CI, foundation, the netlist model, the ngspice runner, the base t
   - `src/refdoc.ts`: `list()`/`get(id)` over OpenSPICE's own bundled docs, ngspice-manual pointers, and the user's local `LTspiceHelp` folder only when present and inside an allowed location; read LTspice help only from the user's files; ship no ADI content
   - _Requirements: 13.1, 13.2, 13.3, 13.4_
 
-- [ ] 14. Implement netlist text helpers
+- [x] 14. Implement netlist text helpers
   - `src/edits.ts`: `addMeas(text, spec)`, `addStep(text, param, values)`, `parameterize(text, device, name)` over netlist text, each returning edited text or an absent-target diagnostic, never simulating
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
