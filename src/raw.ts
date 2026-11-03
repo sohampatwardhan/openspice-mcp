@@ -303,14 +303,21 @@ function parseAsciiValues(bytes: Buffer, header: Header, real: number[][], cplx:
 export interface VariableSummary {
   name: string;
   kind: string;
-  min: number;
-  max: number;
-  final: number;
-  /** Time-domain approximations; null for complex data. */
+  /** Null when the extremum is non-finite (inf/nan) and so not JSON-representable. */
+  min: number | null;
+  max: number | null;
+  final: number | null;
+  /** Time-domain approximations; null for complex data or when non-finite. */
   mean: number | null;
   peakToPeak: number | null;
-  samples: number[];
+  /** Downsampled samples; a non-finite sample is null (JSON has no inf/nan). */
+  samples: (number | null)[];
   complexSamples?: ComplexSample[];
+}
+
+/** Null out a non-finite number so it survives JSON and the tool outputSchema. */
+function finiteOrNull(n: number): number | null {
+  return Number.isFinite(n) ? n : null;
 }
 
 export interface Summary {
@@ -339,18 +346,24 @@ export function summarize(raw: RawFile, vars: string[], maxPoints: number = LIMI
   const variables: VariableSummary[] = names.map((name) => {
     const kind = raw.variables.find((v) => v.name.toLowerCase() === name.toLowerCase())?.kind ?? "";
     const real = raw.values(name);
-    const min = real.length > 0 ? Math.min(...real) : 0;
-    const max = real.length > 0 ? Math.max(...real) : 0;
-    const finalValue = real.length > 0 ? (real[real.length - 1] as number) : 0;
+    // Statistics ignore non-finite samples; if every sample is non-finite the
+    // extrema/mean are null rather than ±Infinity/NaN (which JSON and the tool
+    // outputSchema both reject).
+    const finite = real.filter((x) => Number.isFinite(x));
+    const min = finite.length > 0 ? Math.min(...finite) : null;
+    const max = finite.length > 0 ? Math.max(...finite) : null;
+    const finalValue = real.length > 0 ? finiteOrNull(real[real.length - 1] as number) : null;
+    const mean = raw.complex || finite.length === 0 ? null : finite.reduce((a, b) => a + b, 0) / finite.length;
+    const peakToPeak = raw.complex || min === null || max === null ? null : max - min;
     const summary: VariableSummary = {
       name,
       kind,
       min,
       max,
       final: finalValue,
-      mean: raw.complex ? null : real.length > 0 ? real.reduce((a, b) => a + b, 0) / real.length : 0,
-      peakToPeak: raw.complex ? null : max - min,
-      samples: downsample(real, limit),
+      mean,
+      peakToPeak,
+      samples: downsample(real, limit).map((s) => finiteOrNull(s)),
     };
     if (raw.complex) summary.complexSamples = downsample(raw.complexValues(name), limit);
     return summary;

@@ -43,7 +43,7 @@ describe("readRaw ngspice binary transient", () => {
     const sum = summarize(raw, ["v(out)"], 10);
     const out = sum.variables[0];
     assert.equal(out?.name, "v(out)");
-    assert.ok(out && out.max >= out.min);
+    assert.ok(out && out.max !== null && out.min !== null && out.max >= out.min);
     assert.ok(out && out.samples.length <= 10);
     assert.equal(sum.pointCount, 67);
   });
@@ -136,6 +136,76 @@ describe("readRaw LTspice-style binary", () => {
     assert.equal(raw.format, "ltspice-binary");
     assert.deepEqual(raw.values("time"), [0, 1e-9]);
     assert.deepEqual(raw.values("V(out)"), [0.5, 0.75]);
+  });
+});
+
+describe("summarize with non-finite values", () => {
+  // ngspice can emit inf/nan (failed convergence, divide-by-zero, a floating
+  // node). JSON cannot represent those and zod's z.number() rejects them, so the
+  // summary must sanitise non-finite numbers to null rather than letting them
+  // reach the tool outputSchema (which would crash the whole response).
+  function rawWith(values: number[]): ReturnType<typeof readRaw> {
+    const lines = [
+      "Title: nonfinite",
+      "Date: x",
+      "Plotname: Transient Analysis",
+      "Flags: real",
+      "No. Variables: 2",
+      `No. Points: ${values.length}`,
+      "Variables:",
+      "\t0\ttime\ttime",
+      "\t1\tv(out)\tvoltage",
+      "Binary:\n",
+    ];
+    const header = Buffer.from(lines.join("\n"), "latin1");
+    const payload = Buffer.alloc(values.length * 2 * 8);
+    let off = 0;
+    for (let p = 0; p < values.length; p++) {
+      payload.writeDoubleLE(p * 1e-9, off);
+      off += 8;
+      payload.writeDoubleLE(values[p] as number, off);
+      off += 8;
+    }
+    return readRaw(Buffer.concat([header, payload]));
+  }
+
+  it("nulls non-finite samples but keeps finite stats from the finite points", () => {
+    const raw = rawWith([0, Infinity, NaN, -Infinity, 0.5]);
+    const sum = summarize(raw, ["v(out)"], 10);
+    const out = sum.variables[0];
+    assert.ok(out);
+    // Stats are computed over the finite points only (0 and 0.5).
+    assert.equal(out.min, 0);
+    assert.equal(out.max, 0.5);
+    assert.equal(out.final, 0.5);
+    assert.ok(out.samples.includes(null), "non-finite samples become null");
+    assert.ok(out.samples.includes(0.5), "finite samples are preserved");
+    // None of the emitted sample values is a non-finite number.
+    assert.ok(out.samples.every((s) => s === null || Number.isFinite(s)));
+  });
+
+  it("returns null stats when every sample is non-finite", () => {
+    const raw = rawWith([Infinity, NaN, -Infinity]);
+    const sum = summarize(raw, ["v(out)"], 10);
+    const out = sum.variables[0];
+    assert.ok(out);
+    assert.equal(out.min, null);
+    assert.equal(out.max, null);
+    assert.equal(out.mean, null);
+    assert.equal(out.peakToPeak, null);
+    assert.equal(out.final, null);
+    assert.ok(out.samples.every((s) => s === null));
+  });
+
+  it("leaves an all-finite variable untouched", () => {
+    const raw = rawWith([0, 0.25, 0.5, 0.75, 1]);
+    const sum = summarize(raw, ["v(out)"], 10);
+    const out = sum.variables[0];
+    assert.ok(out);
+    assert.equal(out.min, 0);
+    assert.equal(out.max, 1);
+    assert.equal(out.final, 1);
+    assert.ok(out.samples.every((s) => typeof s === "number"));
   });
 });
 

@@ -15,7 +15,7 @@ import { join } from "node:path";
 
 import { controlRunArgv } from "./argv.js";
 import { runProcess, SpawnError, stopAll } from "./children.js";
-import { prepareCompat, type Translation } from "./compat.js";
+import { prepareCompat, translateMeasArgs, type Translation } from "./compat.js";
 import { ToolError } from "./errors.js";
 import type { Directive, Netlist } from "./netlist.js";
 import { emit } from "./netlist.js";
@@ -75,7 +75,7 @@ export function buildRunDeck(netlist: Netlist, opts: DeckOptions): string {
   };
   const body = emit(stripped).replace(/\n\.end\n?$/, "\n");
 
-  const measLines = meas.map((d: Directive) => `${d.kind} ${d.args}`.trimEnd());
+  const measLines = meas.map((d: Directive) => `${d.kind} ${translateMeasArgs(d.args).args}`.trimEnd());
 
   let control: string;
   if (opts.sweeps.length > 0) {
@@ -113,11 +113,19 @@ export interface RunResult {
   log: string;
 }
 
-/** Bind parsed `.step` sweeps to the device they alter (or a param), per `stepDevice`. */
-function bindSweeps(netlist: Netlist, stepDevice: Record<string, string> | undefined): BoundSweep[] {
+/**
+ * Bind parsed `.step` sweeps to the device they alter (or a param). An explicit
+ * `stepDevice` mapping wins; otherwise, when the swept name is itself a top-level
+ * device instance (`.step R1 1k 3k 1k`), the sweep is bound to that device so
+ * the control loop uses `alter` instead of `alterparam`. A genuine `.param`
+ * sweep (`.step param rl ...`) stays unbound and uses `alterparam`.
+ */
+export function bindSweeps(netlist: Netlist, stepDevice: Record<string, string> | undefined): BoundSweep[] {
   const map = stepDevice ?? {};
+  const deviceNames = new Set(netlist.devices.map((d) => d.name.toLowerCase()));
   return parseStepDirectives(netlist).map((sweep) => {
-    const device = map[sweep.param] ?? null;
+    const explicit = map[sweep.param];
+    const device = explicit ?? (deviceNames.has(sweep.param.toLowerCase()) ? sweep.param : null);
     return { param: sweep.param, device, values: sweep.values };
   });
 }
@@ -129,6 +137,18 @@ function bindSweeps(netlist: Netlist, stepDevice: Record<string, string> | undef
  */
 export async function runSimulation(netlist: Netlist, opts: RunOptions): Promise<RunResult> {
   const prep = prepareCompat(netlist);
+  // Record any LTspice `.meas` clause rewrites the deck build will apply.
+  for (const directive of netlist.directives) {
+    if (directive.kind.toLowerCase() !== ".meas") continue;
+    const { changed } = translateMeasArgs(directive.args);
+    if (changed) {
+      prep.translations.push({
+        construct: ".meas",
+        line: directive.line,
+        message: `.meas AT <value> rewritten to ngspice AT=<value> on line ${directive.line}`,
+      });
+    }
+  }
   const sweeps = bindSweeps(netlist, opts.stepDevice);
 
   const runDir = await opts.roots.makeRunDir("sim");
